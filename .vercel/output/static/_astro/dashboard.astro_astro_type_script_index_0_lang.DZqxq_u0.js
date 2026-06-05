@@ -1,1 +1,0 @@
-import{b as n,g as r}from"./auth.CMd_5598.js";n();const s=document.getElementById("private-area"),t=document.getElementById("user-firstname"),e=r();e&&t&&(t.textContent=e.name.split(" ")[0]||e.name);s.classList.remove("hidden");
