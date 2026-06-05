@@ -1,0 +1,466 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Semua Domain Pelanggan" activeMenu="domains">
+  <div id="admin-domains-container">
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Semua Domain Pelanggan</h1>
+        <p class="page-subtitle">Daftar lengkap seluruh domain milik pelanggan yang terdaftar di sistem reseller.</p>
+      </div>
+    </div>
+
+    <!-- Search & Filters -->
+    <div class="filters-bar">
+      <input type="text" id="search-input" class="form-control-compact" placeholder="Cari nama domain..." style="max-width: 250px;" />
+      <select id="status-filter" class="form-control-compact" style="max-width: 150px;">
+        <option value="">Semua Status</option>
+        <option value="1">Aktif</option>
+        <option value="2">Expired</option>
+        <option value="0">Pending</option>
+        <option value="7">Suspended</option>
+      </select>
+      <button class="btn btn-outline btn-sm-custom" id="filter-btn">Filter</button>
+      <button class="btn btn-outline btn-sm-custom" id="refresh-btn" style="margin-left: auto;">
+        <svg class="lucide lucide-refresh-cw" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Refresh
+      </button>
+    </div>
+
+    <!-- Table -->
+    <div class="table-card">
+      <!-- Loading -->
+      <div id="domains-loading" class="state-center">
+        <div class="spinner"></div>
+        <p>Memuat daftar domain...</p>
+      </div>
+      <!-- Empty -->
+      <div id="domains-empty" class="state-center hidden"></div>
+      <!-- Table -->
+      <div id="domains-table-wrapper" class="table-scroll hidden">
+        <table>
+          <thead>
+            <tr>
+              <th>Nama Domain</th>
+              <th>Status</th>
+              <th>Pemilik / Customer</th>
+              <th>Tanggal Registrasi</th>
+              <th>Tanggal Kadaluarsa</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="domains-list-body"></tbody>
+        </table>
+      </div>
+
+      <!-- Pagination Footer -->
+      <div id="pagination-container" class="pagination-bar hidden">
+        <span class="text-secondary" id="pagination-info" style="font-size:12px;">Halaman 1 dari 1 (Total: 0)</span>
+        <div style="display:flex;gap:8px;">
+          <button id="prev-page-btn" class="btn btn-outline btn-sm-custom" disabled>Sebelumnya</button>
+          <button id="next-page-btn" class="btn btn-outline btn-sm-custom" disabled>Berikutnya</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    import { apiFetch } from '../../utils/api';
+
+    const domainsLoading = document.getElementById('domains-loading') as HTMLDivElement;
+    const domainsEmpty = document.getElementById('domains-empty') as HTMLDivElement;
+    const domainsTableWrapper = document.getElementById('domains-table-wrapper') as HTMLDivElement;
+    const domainsListBody = document.getElementById('domains-list-body') as HTMLTableSectionElement;
+    const refreshBtn = document.getElementById('refresh-btn') as HTMLButtonElement;
+    const searchInput = document.getElementById('search-input') as HTMLInputElement;
+    const statusFilter = document.getElementById('status-filter') as HTMLSelectElement;
+    const filterBtn = document.getElementById('filter-btn') as HTMLButtonElement;
+
+    const paginationContainer = document.getElementById('pagination-container') as HTMLDivElement;
+    const paginationInfo = document.getElementById('pagination-info') as HTMLSpanElement;
+    const prevPageBtn = document.getElementById('prev-page-btn') as HTMLButtonElement;
+    const nextPageBtn = document.getElementById('next-page-btn') as HTMLButtonElement;
+
+    let currentPage = 1;
+    const limit = 20;
+    let totalPages = 1;
+    let currentSearch = '';
+    let currentStatus = '';
+    let currentLoadId = 0;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('page')) currentPage = parseInt(urlParams.get('page') || '1', 10);
+    if (urlParams.has('name')) currentSearch = urlParams.get('name') || '';
+    if (urlParams.has('status')) currentStatus = urlParams.get('status') || '';
+
+    if (searchInput) searchInput.value = currentSearch;
+    if (statusFilter) statusFilter.value = currentStatus;
+
+    loadDomains();
+
+    refreshBtn?.addEventListener('click', () => loadDomains());
+
+    filterBtn?.addEventListener('click', () => {
+      currentSearch = searchInput.value.trim();
+      currentStatus = statusFilter.value;
+      currentPage = 1;
+      updateUrlAndLoad();
+    });
+
+    let searchTimeout: any;
+    searchInput?.addEventListener('input', () => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        currentSearch = searchInput.value.trim();
+        currentPage = 1;
+        updateUrlAndLoad();
+      }, 300);
+    });
+
+    searchInput?.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        currentSearch = searchInput.value.trim();
+        currentStatus = statusFilter.value;
+        currentPage = 1;
+        updateUrlAndLoad();
+      }
+    });
+
+    statusFilter?.addEventListener('change', () => {
+      currentSearch = searchInput.value.trim();
+      currentStatus = statusFilter.value;
+      currentPage = 1;
+      updateUrlAndLoad();
+    });
+
+    prevPageBtn?.addEventListener('click', () => {
+      if (currentPage > 1) { currentPage--; updateUrlAndLoad(); }
+    });
+
+    nextPageBtn?.addEventListener('click', () => {
+      if (currentPage < totalPages) { currentPage++; updateUrlAndLoad(); }
+    });
+
+    function updateUrlAndLoad() {
+      const url = new URL(window.location.href);
+      if (currentPage > 1) url.searchParams.set('page', String(currentPage));
+      else url.searchParams.delete('page');
+      if (currentSearch) url.searchParams.set('name', currentSearch);
+      else url.searchParams.delete('name');
+      if (currentStatus) url.searchParams.set('status', currentStatus);
+      else url.searchParams.delete('status');
+      window.history.pushState({}, '', url.toString());
+      loadDomains();
+    }
+
+    async function loadDomains() {
+      const loadId = ++currentLoadId;
+      domainsLoading.classList.remove('hidden');
+      domainsTableWrapper.classList.add('hidden');
+      domainsEmpty.classList.add('hidden');
+      paginationContainer.classList.add('hidden');
+
+      try {
+        const q = new URLSearchParams();
+        q.append('page', String(currentPage));
+        q.append('limit', String(limit));
+        // Using 'search' instead of 'name' as per admin API
+        if (currentSearch) q.append('search', currentSearch);
+        if (currentStatus) q.append('status', currentStatus);
+
+        const res = await apiFetch(`/api/admin/domains?${q.toString()}`);
+        if (loadId !== currentLoadId) return;
+
+        domainsLoading.classList.add('hidden');
+
+        if (res.success && res.data && res.data.length > 0) {
+          domainsListBody.innerHTML = '';
+          domainsTableWrapper.classList.remove('hidden');
+
+          res.data.forEach((domain: any) => {
+            const name = domain.name || domain.domain_name || domain.domain || '-';
+
+            const sc = domain.status;
+            let badgeClass = 'badge-active', statusText = 'active';
+            if (sc === 0) { badgeClass = 'badge-pending'; statusText = 'pending'; }
+            else if (sc === 2) { badgeClass = 'badge-expired'; statusText = 'expired'; }
+            else if (sc === 3) { badgeClass = 'badge-expired'; statusText = 'pend. delete'; }
+            else if (sc === 7) { badgeClass = 'badge-suspended'; statusText = 'suspended'; }
+
+            let expDisplay = '-', remainHTML = '';
+            if (domain.expired_at) {
+              const exp = new Date(domain.expired_at);
+              expDisplay = exp.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
+              const daysLeft = Math.ceil((exp.getTime() - Date.now()) / 86400000);
+              if (daysLeft > 0) {
+                const cls = daysLeft <= 14 ? 'danger' : daysLeft <= 30 ? 'warn' : '';
+                remainHTML = `<div class="expiry-remaining ${cls}">${daysLeft} hari tersisa</div>`;
+              } else {
+                remainHTML = `<div class="expiry-remaining danger">Expired</div>`;
+              }
+            }
+
+            let regDisplay = '-';
+            const regDateStr = domain.created_at || domain.registered_at || domain.created;
+            if (regDateStr) {
+              const reg = new Date(regDateStr);
+              regDisplay = reg.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            }
+
+            const rdashCustId = domain.customer && typeof domain.customer === 'object'
+              ? domain.customer.id
+              : typeof domain.customer === 'number'
+              ? domain.customer
+              : domain.customer_id;
+
+            const ownerName = domain.customer?.name || (rdashCustId ? `Customer ID #${rdashCustId}` : 'Tidak Ada Data');
+            const ownerEmail = domain.customer?.email || '';
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td><span class="domain-name">${name}</span></td>
+              <td><span class="badge ${badgeClass}">${statusText}</span></td>
+              <td>
+                <div class="plan-period">${ownerName}</div>
+                <div class="plan-price">${ownerEmail}</div>
+              </td>
+              <td><div class="expiry-date">${regDisplay}</div></td>
+              <td>
+                <div class="expiry-date">${expDisplay}</div>
+                ${remainHTML}
+              </td>
+              <td>
+                <a href="/domains/${domain.id}/overview" class="btn btn-outline btn-sm-custom" style="height:32px;padding:0 12px;font-weight:600;display:inline-flex;align-items:center;gap:6px;">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                  Kelola
+                </a>
+              </td>
+            `;
+            domainsListBody.appendChild(tr);
+          });
+
+          const meta = res.meta || {};
+          const total = meta.total || res.data.length;
+          totalPages = meta.last_page || Math.ceil(total / limit) || 1;
+          paginationInfo.innerText = `Halaman ${currentPage} dari ${totalPages} (Total: ${total})`;
+          prevPageBtn.disabled = currentPage <= 1;
+          nextPageBtn.disabled = currentPage >= totalPages;
+          paginationContainer.classList.remove('hidden');
+
+        } else {
+          showEmptyState(!currentSearch && !currentStatus);
+        }
+      } catch (err) {
+        console.error('Failed to load domains:', err);
+        domainsLoading.classList.add('hidden');
+        showEmptyState(!currentSearch && !currentStatus);
+      }
+    }
+
+    function showEmptyState(noFilter: boolean) {
+      domainsLoading.classList.add('hidden');
+      if (noFilter) {
+        domainsEmpty.innerHTML = `
+          <div style="padding: 48px 24px; text-align: center;">
+            <h3 style="font-size: 18px; font-weight: 800; color: var(--text); margin-bottom: 10px;">Belum Ada Domain Pelanggan</h3>
+            <p style="font-size: 13px; color: var(--text-secondary); max-width: 440px; margin: 0 auto 24px; line-height: 1.6;">
+              Tidak ada data domain pelanggan di sistem reseller saat ini.
+            </p>
+          </div>
+        `;
+      } else {
+        domainsEmpty.innerHTML = `
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:block;margin:0 auto 8px">
+            <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+          <p>Tidak ada domain yang cocok dengan pencarian Anda.</p>
+        `;
+      }
+      domainsEmpty.classList.remove('hidden');
+    }
+  </script>
+
+  <style is:global>
+    #admin-domains-container {
+      /* ── PAGE HEADER ── */
+      .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 20px;
+      }
+      .page-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text);
+        line-height: 1.2;
+      }
+      .page-subtitle {
+        font-size: 13px;
+        color: var(--text-secondary);
+        margin-top: 3px;
+      }
+
+      /* ── FILTERS BAR ── */
+      .filters-bar {
+        margin-top: 16px;
+        margin-bottom: 16px;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        width: 100%;
+      }
+
+      .form-control-compact {
+        font-family: var(--font);
+        font-size: 12.5px;
+        padding: 8px 10px;
+        background-color: var(--surface);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        outline: none;
+        transition: border-color 0.15s;
+        height: 32px;
+        width: 100%;
+      }
+      .form-control-compact:focus { border-color: var(--accent); }
+
+      /* ── BUTTONS ── */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 14px;
+        font-size: 13px;
+        font-family: var(--font);
+        font-weight: 500;
+        border-radius: 6px;
+        cursor: pointer;
+        border: 1px solid transparent;
+        text-decoration: none;
+        line-height: 1;
+        white-space: nowrap;
+        transition: background 0.12s, border-color 0.12s;
+      }
+      .btn-outline {
+        background: var(--surface);
+        border-color: var(--border);
+        color: var(--text);
+      }
+      .btn-outline:hover { background: #f9fafb; border-color: #d1d5db; }
+
+      .btn-sm-custom {
+        padding: 6px 12px;
+        font-size: 12px;
+        height: 32px;
+        border-radius: 6px;
+        line-height: 1;
+      }
+
+      /* ── TABLE CARD & SCROLL ── */
+      .table-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      }
+      .table-scroll { overflow-x: auto; }
+      table { width: 100%; border-collapse: collapse; }
+      thead tr { 
+        border-bottom: 1px solid var(--border); 
+        background: var(--bg); 
+      }
+      th {
+        padding: 14px 20px;
+        text-align: left;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        white-space: nowrap;
+        background: transparent !important;
+      }
+      td {
+        padding: 14px 20px;
+        font-size: 13px;
+        color: var(--text);
+        border-bottom: 1px solid #f3f4f6;
+        vertical-align: middle;
+        white-space: nowrap;
+        transition: background-color 0.15s;
+      }
+      tbody tr:hover td { 
+        background-color: var(--bg) !important; 
+      }
+      tbody tr:last-child td { border-bottom: none; }
+
+      .domain-name {
+        font-weight: 600;
+        font-size: 13px;
+        color: var(--text);
+      }
+
+      /* ── STATUS BADGES ── */
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+      }
+      .badge-active { background: #dcfce7; color: #16a34a; }
+      .badge-expired { background: #fee2e2; color: #dc2626; }
+      .badge-pending { background: #fef3c7; color: #d97706; }
+      .badge-suspended { background: #f3e8ff; color: #9333ea; }
+
+      /* ── PLAN CELL ── */
+      .plan-period { font-weight: 500; font-size: 13px; }
+      .plan-price { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
+
+      /* ── EXPIRY CELL ── */
+      .expiry-date { font-size: 13px; }
+      .expiry-remaining { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
+      .expiry-remaining.warn { color: #d97706; }
+      .expiry-remaining.danger { color: #dc2626; }
+
+      /* ── PAGINATION BAR ── */
+      .pagination-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 20px;
+        border-top: 1px solid var(--border);
+        background: var(--surface);
+      }
+
+      /* ── STATES ── */
+      .state-center {
+        text-align: center;
+        padding: 48px 20px;
+        color: var(--text-secondary);
+      }
+      .state-center p { font-size: 13px; margin-top: 8px; }
+
+      .spinner {
+        width: 22px; height: 22px;
+        border: 2px solid var(--border);
+        border-top-color: var(--accent);
+        border-radius: 50%;
+        animation: spin 0.75s linear infinite;
+        display: inline-block;
+      }
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .hidden { display: none !important; }
+  </style>
+</AdminLayout>
