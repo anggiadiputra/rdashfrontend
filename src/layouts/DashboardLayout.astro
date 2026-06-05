@@ -1,0 +1,799 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  activeMenu?: string;
+}
+const { title, activeMenu = 'dashboard' } = Astro.props;
+
+const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
+let appName = 'Ruangtunggu';
+let appLogo = '';
+
+try {
+  const settingsRes = await fetch(`${apiUrl}/api/settings`);
+  const settingsData = await settingsRes.json();
+  if (settingsData && settingsData.success && settingsData.data) {
+    appName = settingsData.data.app_name || 'Ruangtunggu';
+    appLogo = settingsData.data.app_logo || '';
+  }
+} catch (e) {
+  console.warn('Failed to fetch settings from API in DashboardLayout.astro, using default branding.');
+}
+
+const logoUrl = appLogo ? `${apiUrl}${appLogo}` : '';
+---
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title} — {appName}</title>
+
+  <style is:global>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --sidebar-w: 240px;
+      --border: #e5e7eb;
+      --text: #111827;
+      --text-secondary: #6b7280;
+      --text-muted: #9ca3af;
+      --accent: #2563eb;
+      --accent-bg: #eff6ff;
+      --bg: #f9fafb;
+      --surface: #ffffff;
+      --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    [data-theme="dark"] {
+      --border: #2d2d34;
+      --text: #ffffff;
+      --text-secondary: #a1a1aa;
+      --text-muted: #71717a;
+      --accent: #3b82f6;
+      --accent-bg: rgba(59, 130, 246, 0.15);
+      --bg: #121214;
+      --surface: #1b1b1f;
+    }
+
+    body {
+      font-family: var(--font);
+      font-size: 13px;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: var(--sidebar-w);
+      min-height: 100vh;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      overflow-y: auto;
+      z-index: 100;
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 20px 24px 16px;
+      text-decoration: none;
+      color: var(--text);
+    }
+    .logo-icon {
+      width: 24px;
+      height: 24px;
+      background: var(--accent);
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .logo-icon svg { width: 14px; height: 14px; }
+    .logo-text {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.3px;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 4px 0 12px;
+    }
+
+    .nav-group {
+      padding: 12px 0 4px;
+    }
+    .nav-group-label {
+      padding: 0 24px 6px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.7px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      margin: 2px 12px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      text-decoration: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      width: calc(100% - 24px);
+      text-align: left;
+      font-family: var(--font);
+      transition: background 0.15s, color 0.15s;
+    }
+    .nav-item:hover {
+      background: var(--border);
+      color: var(--text);
+    }
+    .nav-item.active {
+      background: rgba(37, 99, 235, 0.08);
+      color: var(--accent);
+      font-weight: 500;
+    }
+    .nav-item svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      stroke-width: 2;
+      stroke: var(--text-secondary);
+      transition: stroke 0.15s;
+    }
+    .nav-item:hover svg {
+      stroke: var(--text);
+    }
+    .nav-item.active svg {
+      stroke: var(--accent);
+    }
+
+    .sidebar-scroll-hint {
+      padding: 8px 24px;
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── MAIN WRAPPER ── */
+    .main-wrap {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .topbar-user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-left: auto;
+    }
+    .topbar-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1px solid var(--border);
+      order: -1;
+    }
+    .topbar-info { text-align: right; }
+    .topbar-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.3;
+    }
+    .topbar-email {
+      font-size: 11px;
+      color: var(--text-secondary);
+      line-height: 1.3;
+    }
+
+    /* ── PAGE CONTENT ── */
+    .page-content {
+      flex: 1;
+      padding: 28px 28px;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+    .page-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.2;
+    }
+    .page-subtitle {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 3px;
+    }
+    .page-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      font-size: 13px;
+      font-family: var(--font);
+      font-weight: 500;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      text-decoration: none;
+      line-height: 1;
+      white-space: nowrap;
+      transition: background 0.12s, border-color 0.12s;
+    }
+    .btn svg { width: 14px; height: 14px; }
+    .btn-outline {
+      background: var(--surface);
+      border-color: var(--border);
+      color: var(--text);
+    }
+    .btn-outline:hover { background: #f9fafb; border-color: #d1d5db; }
+    .btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-manage {
+      background: none;
+      border: none;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 500;
+      font-family: var(--font);
+      cursor: pointer;
+      padding: 0;
+      text-decoration: none;
+    }
+    .btn-manage:hover { color: var(--accent); }
+
+    /* ── TABLE ── */
+    .table-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .table-scroll { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    thead tr { border-bottom: 1px solid var(--border); }
+    th {
+      padding: 10px 20px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      white-space: nowrap;
+      background: var(--surface);
+    }
+    td {
+      padding: 14px 20px;
+      font-size: 13px;
+      color: var(--text);
+      border-bottom: 1px solid #f3f4f6;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+
+    /* Domain name bold */
+    .domain-name { font-weight: 600; font-size: 13px; }
+
+    /* ── STATUS BADGE ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .badge-active { background: #dcfce7; color: #16a34a; }
+    .badge-expired { background: #fee2e2; color: #dc2626; }
+    .badge-pending { background: #fef3c7; color: #d97706; }
+    .badge-suspended { background: #f3e8ff; color: #9333ea; }
+
+    /* ── TOGGLE SWITCH ── */
+    .toggle {
+      position: relative;
+      display: inline-block;
+      width: 38px;
+      height: 22px;
+      flex-shrink: 0;
+    }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: #d1d5db;
+      border-radius: 22px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 16px; height: 16px;
+      left: 3px; top: 3px;
+      background: white;
+      border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      transition: transform 0.2s;
+    }
+    .toggle input:checked + .toggle-slider { background: var(--accent); }
+    .toggle input:checked + .toggle-slider::before { transform: translateX(16px); }
+
+    /* ── PLAN CELL ── */
+    .plan-period { font-weight: 500; font-size: 13px; }
+    .plan-price { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
+
+    /* ── EXPIRY CELL ── */
+    .expiry-date { font-size: 13px; }
+    .expiry-remaining { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
+    .expiry-remaining.warn { color: #d97706; }
+    .expiry-remaining.danger { color: #dc2626; }
+
+    /* ── STATES ── */
+    .state-center {
+      text-align: center;
+      padding: 48px 20px;
+      color: var(--text-secondary);
+    }
+    .state-center p { font-size: 13px; margin-top: 8px; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      width: 22px; height: 22px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+      display: inline-block;
+    }
+
+    /* ── DROPDOWN & RESPONSIVE SIDELAY ── */
+    .sidebar-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(4px);
+      z-index: 99;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+      pointer-events: none;
+    }
+    .sidebar-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .sidebar-toggle-btn {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text);
+      padding: 6px;
+      border-radius: 6px;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+    }
+    .sidebar-toggle-btn:hover {
+      background: var(--border);
+    }
+
+    .profile-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      width: 200px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+      z-index: 50;
+      padding: 6px 0;
+      animation: fadeInDropdown 0.15s ease-out;
+      text-align: left;
+    }
+    
+    @keyframes fadeInDropdown {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .dropdown-header {
+      padding: 10px 16px;
+    }
+    .dropdown-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .dropdown-email {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+    .dropdown-divider {
+      border: 0;
+      border-top: 1px solid var(--border);
+      margin: 6px 0;
+    }
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 8px 16px;
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      background: none;
+      border: none;
+      text-align: left;
+      cursor: pointer;
+      font-family: var(--font);
+      transition: background 0.15s, color 0.15s;
+    }
+    .dropdown-item:hover {
+      background: var(--bg);
+      color: var(--text);
+    }
+    .dropdown-icon {
+      width: 14px;
+      height: 14px;
+      stroke: var(--text-secondary);
+      stroke-width: 2;
+      fill: none;
+    }
+    .dropdown-item:hover .dropdown-icon {
+      stroke: var(--text);
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      .main-wrap {
+        margin-left: 0 !important;
+      }
+      .sidebar-toggle-btn {
+        display: flex;
+      }
+      .page-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+      }
+      .page-actions {
+        flex-wrap: wrap;
+        width: 100%;
+        justify-content: flex-start;
+      }
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <!-- ── SIDEBAR OVERLAY ── -->
+  <div id="sidebar-overlay" class="sidebar-overlay hidden"></div>
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <!-- Logo -->
+    <a href="/dashboard" class="sidebar-logo">
+      {logoUrl ? (
+        <img src={logoUrl} alt={appName} style="max-height: 32px; max-width: 100%; object-fit: contain; display: block;" />
+      ) : (
+        <>
+          <div class="logo-icon">
+            <svg class="lucide lucide-box" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+            </svg>
+          </div>
+          <span class="logo-text">
+            {appName.toLowerCase() === 'ruangtunggu' ? (
+              <><span style="color:var(--text);font-weight:700">ruang</span>tunggu</>
+            ) : (
+              appName
+            )}
+          </span>
+        </>
+      )}
+    </a>
+
+
+    <nav class="sidebar-nav">
+
+      <!-- INFRASTRUCTURE -->
+      <div class="nav-group">
+        <div class="nav-group-label">Menu</div>
+        <a href="/dashboard" class={`nav-item ${activeMenu === 'dashboard' ? 'active' : ''}`}>
+          <svg class="lucide lucide-layout-dashboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="7" height="9" x="3" y="3" rx="1"/>
+            <rect width="7" height="5" x="14" y="3" rx="1"/>
+            <rect width="7" height="9" x="14" y="12" rx="1"/>
+            <rect width="7" height="5" x="3" y="16" rx="1"/>
+          </svg>
+          Dashboard
+        </a>
+        <a href="/dashboard/domains" class={`nav-item ${activeMenu === 'domains' ? 'active' : ''}`}>
+          <svg class="lucide lucide-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/>
+            <path d="M2 12h20"/>
+          </svg>
+          Domains
+        </a>
+        <a href="/dashboard/whois" class={`nav-item ${activeMenu === 'whois' ? 'active' : ''}`}>
+          <svg class="lucide lucide-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          Cek WHOIS
+        </a>
+        <a href="/dashboard/prices" class={`nav-item ${activeMenu === 'prices' ? 'active' : ''}`}>
+          <svg class="lucide lucide-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+            <line x1="7" y1="7" x2="7.01" y2="7"/>
+          </svg>
+          Daftar Harga
+        </a>
+      </div>
+
+      <!-- ACCOUNT -->
+      <div class="nav-group">
+        <div class="nav-group-label">Account</div>
+        <button type="button" class="nav-item">
+          <svg class="lucide lucide-credit-card" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="20" height="14" x="2" y="5" rx="2"/>
+            <line x1="2" x2="22" y1="10" y2="10"/>
+          </svg>
+          Billing
+        </button>
+        <a href="/profile" class={`nav-item ${activeMenu === 'profile' ? 'active' : ''}`}>
+          <svg class="lucide lucide-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+          Profil
+        </a>
+        <button class="nav-item" id="logout-btn">
+          <svg class="lucide lucide-log-out" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          Keluar
+        </button>
+      </div>
+
+      <!-- ADMIN LINK (Visible only if user.is_admin is true) -->
+      <div class="nav-group hidden" id="admin-menu-group">
+        <div class="nav-group-label" style="color:#e11d48">Administrator</div>
+        <a href="/admin/billing" class="nav-item" style="color:#e11d48;font-weight:600;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#e11d48" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke:#e11d48">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+          Panel Admin
+        </a>
+      </div>
+
+    </nav>
+
+    <div class="sidebar-scroll-hint">
+      <svg class="lucide lucide-chevron-down" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      Scroll for More
+    </div>
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <div class="main-wrap">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <!-- Toggle button for mobile sidebar -->
+      <button id="sidebar-toggle-btn" class="sidebar-toggle-btn" aria-label="Toggle sidebar">
+        <svg class="lucide lucide-menu" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+      </button>
+
+      <div class="topbar-user" id="profile-dropdown-trigger" style="position: relative; cursor: pointer;">
+        <div class="topbar-info">
+          <div class="topbar-name" id="top-user-name">—</div>
+          <div class="topbar-email" id="top-user-email">—</div>
+        </div>
+        <img id="top-avatar" class="topbar-avatar" src="https://ui-avatars.com/api/?name=U&size=32" alt="avatar">
+
+        <!-- Profile Dropdown Menu -->
+        <div id="profile-dropdown-menu" class="profile-dropdown hidden">
+          <div class="dropdown-header">
+            <div class="dropdown-name" id="dropdown-user-name">—</div>
+            <div class="dropdown-email" id="dropdown-user-email">—</div>
+          </div>
+          <hr class="dropdown-divider" />
+          <a href="/profile" class="dropdown-item">
+            <svg class="dropdown-icon lucide lucide-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Profil Saya
+          </a>
+          <button type="button" class="dropdown-item">
+            <svg class="dropdown-icon lucide lucide-credit-card" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+            Riwayat Penagihan
+          </button>
+          <a href="/dashboard/domains" class="dropdown-item">
+            <svg class="dropdown-icon lucide lucide-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+            Domains Saya
+          </a>
+          <a href="/dashboard/prices" class="dropdown-item">
+            <svg class="dropdown-icon lucide lucide-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+            Daftar Harga
+          </a>
+          <hr class="dropdown-divider" />
+          <button id="dropdown-logout-btn" class="dropdown-item">
+            <svg class="dropdown-icon lucide lucide-log-out" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Keluar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Page Content -->
+    <div class="page-content">
+      <slot />
+    </div>
+  </div>
+
+  <script>
+    import { getUser } from '../utils/auth';
+
+    // Populate user profile info
+    const user = getUser();
+    if (user) {
+      const nameEl = document.getElementById('top-user-name');
+      const emailEl = document.getElementById('top-user-email');
+      const dropdownNameEl = document.getElementById('dropdown-user-name');
+      const dropdownEmailEl = document.getElementById('dropdown-user-email');
+      const avatarEl = document.getElementById('top-avatar') as HTMLImageElement;
+
+      if (nameEl) nameEl.textContent = user.name;
+      if (emailEl) emailEl.textContent = user.email;
+      if (dropdownNameEl) dropdownNameEl.textContent = user.name;
+      if (dropdownEmailEl) dropdownEmailEl.textContent = user.email;
+      if (avatarEl) avatarEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&size=32&background=e0e7ff&color=3730a3`;
+      
+      // Show admin menu if user is admin
+      if (user.is_admin) {
+        document.getElementById('admin-menu-group')?.classList.remove('hidden');
+      }
+    }
+
+    // Logout handling
+    const handleLogout = () => {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login';
+    };
+
+    document.getElementById('logout-btn')?.addEventListener('click', handleLogout);
+    document.getElementById('dropdown-logout-btn')?.addEventListener('click', handleLogout);
+
+    // Profile Dropdown Toggle
+    const profileTrigger = document.getElementById('profile-dropdown-trigger');
+    const profileMenu = document.getElementById('profile-dropdown-menu');
+
+    profileTrigger?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      profileMenu?.classList.toggle('hidden');
+    });
+
+    // Close profile dropdown when clicking outside
+    document.addEventListener('click', () => {
+      profileMenu?.classList.add('hidden');
+    });
+
+    // Sidebar Mobile Toggle
+    const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
+    const sidebar = document.querySelector('.sidebar');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+    const openSidebar = () => {
+      sidebar?.classList.add('open');
+      sidebarOverlay?.classList.add('open');
+      sidebarOverlay?.classList.remove('hidden');
+    };
+
+    const closeSidebar = () => {
+      sidebar?.classList.remove('open');
+      sidebarOverlay?.classList.remove('open');
+      setTimeout(() => {
+        if (sidebarOverlay && !sidebarOverlay.classList.contains('open')) {
+          sidebarOverlay.classList.add('hidden');
+        }
+      }, 250); // Match transition duration
+    };
+
+    sidebarToggleBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (sidebar?.classList.contains('open')) {
+        closeSidebar();
+      } else {
+        openSidebar();
+      }
+    });
+
+    sidebarOverlay?.addEventListener('click', closeSidebar);
+
+    // Close sidebar on navigation click
+    const sidebarLinks = document.querySelectorAll('.sidebar-nav a');
+    sidebarLinks.forEach(link => {
+      link.addEventListener('click', closeSidebar);
+    });
+  </script>
+
+</body>
+</html>

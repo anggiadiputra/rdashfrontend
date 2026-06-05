@@ -1,0 +1,809 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
+let appName = 'Ruangtunggu';
+let appLogo = '';
+
+try {
+  const settingsRes = await fetch(`${apiUrl}/api/settings`);
+  const settingsData = await settingsRes.json();
+  if (settingsData && settingsData.success && settingsData.data) {
+    appName = settingsData.data.app_name || 'Ruangtunggu';
+    appLogo = settingsData.data.app_logo || '';
+  }
+} catch (e) {
+  console.warn('Failed to fetch settings from API in Layout.astro, using default branding.');
+}
+
+const logoUrl = appLogo ? `${apiUrl}${appLogo}` : '';
+const { title, description = `${appName} - Self-Service Customer Domain Portal` } = Astro.props;
+---
+
+
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    
+    <title>{title} | {appName}</title>
+    <meta name="description" content={description} />
+    
+    <!-- Immediate theme set script to prevent layout flashes -->
+    <script is:inline>
+      const storedTheme = localStorage.getItem('theme');
+      const initialTheme = storedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', initialTheme);
+    </script>
+
+  </head>
+  <body>
+    <!-- 1. Header Navigation -->
+    <header class="main-header">
+      <div class="container header-container" style="position: relative;">
+        <a href="/" class="logo">
+          {logoUrl ? (
+            <img src={logoUrl} alt={appName} style="max-height: 36px; width: auto; object-fit: contain;" />
+          ) : (
+            appName.toLowerCase() === 'ruangtunggu' ? (
+              <><span class="logo-accent">ruang</span>tunggu</>
+            ) : (
+              appName
+            )
+          )}
+        </a>
+
+        
+        <!-- Hamburger Menu Button for Mobile -->
+        <button id="menu-toggle-btn" class="menu-toggle-btn" aria-label="Toggle menu">
+          <svg id="hamburger-icon" class="lucide lucide-menu" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+        </button>
+
+        <nav class="nav-links">
+          <a href="/" class="nav-item">
+            <svg class="lucide lucide-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/>
+              <path d="M2 12h20"/>
+            </svg>
+            Cari Domain
+          </a>
+          <a href="/whois" class="nav-item">
+            <svg class="lucide lucide-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            Cek WHOIS
+          </a>
+          <a href="/prices" class="nav-item">
+            <svg class="lucide lucide-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+              <line x1="7" y1="7" x2="7.01" y2="7"/>
+            </svg>
+            Daftar Harga
+          </a>
+
+          <!-- Theme Toggle Button -->
+          <button id="theme-toggle-btn" class="theme-toggle-btn" aria-label="Toggle tema gelap/terang">
+            <svg id="sun-icon" class="lucide lucide-sun theme-icon hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+            <svg id="moon-icon" class="lucide lucide-moon theme-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+          </button>
+          
+          <!-- Profile Dropdown Container -->
+          <div class="profile-dropdown-container" style="position: relative;">
+            <button id="profile-dropdown-trigger" class="profile-trigger-btn" aria-label="Menu pengguna">
+              <!-- Default Guest Avatar Icon -->
+              <span id="profile-avatar-guest" class="profile-avatar-icon">
+                <svg class="lucide lucide-user" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+              </span>
+              <!-- Authenticated User Avatar (hidden initially) -->
+              <span id="profile-avatar-user" class="profile-avatar-icon hidden" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;">
+                <img id="profile-avatar-img" class="nav-avatar-img" src="https://ui-avatars.com/api/?name=U&size=32" alt="avatar" style="width:32px; height:32px; border-radius:50%; object-fit:cover;">
+              </span>
+            </button>
+
+            <!-- Dropdown Menu -->
+            <div id="profile-dropdown-menu" class="nav-profile-dropdown hidden">
+              <!-- Authenticated Header (will be filled/shown by script) -->
+              <div id="dropdown-header-auth" class="nav-dropdown-header hidden">
+                <div class="dropdown-name" id="nav-user-name">—</div>
+                <div class="dropdown-email" id="nav-user-email">—</div>
+              </div>
+              
+              <!-- Guest Header (shown by default) -->
+              <div id="dropdown-header-guest" class="nav-dropdown-header">
+                <div class="dropdown-name">Selamat Datang</div>
+                <div class="dropdown-email">Silakan masuk atau daftar</div>
+              </div>
+              
+              <hr class="nav-dropdown-divider" />
+              
+              <!-- Guest Links -->
+              <div id="dropdown-links-guest">
+                <a href="/login" class="nav-dropdown-item">
+                  <svg class="lucide lucide-log-in" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                    <polyline points="10 17 15 12 10 7"/>
+                    <line x1="15" y1="12" x2="3" y2="12"/>
+                  </svg>
+                  Masuk
+                </a>
+                <a href="/register" class="nav-dropdown-item">
+                  <svg class="lucide lucide-user-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <line x1="19" y1="8" x2="19" y2="14"/>
+                    <line x1="22" y1="11" x2="16" y2="11"/>
+                  </svg>
+                  Daftar Akun
+                </a>
+              </div>
+              
+              <!-- Authenticated Links -->
+              <div id="dropdown-links-auth" class="hidden">
+                <a href="/dashboard" class="nav-dropdown-item">
+                  <svg class="lucide lucide-layout-dashboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="7" height="9" x="3" y="3" rx="1"/>
+                    <rect width="7" height="5" x="14" y="3" rx="1"/>
+                    <rect width="7" height="9" x="14" y="12" rx="1"/>
+                    <rect width="7" height="5" x="3" y="16" rx="1"/>
+                  </svg>
+                  Dashboard
+                </a>
+                <a href="/profile" class="nav-dropdown-item">
+                  <svg class="lucide lucide-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                  </svg>
+                  Profil Saya
+                </a>
+                <hr class="nav-dropdown-divider" />
+                <button id="nav-dropdown-logout-btn" class="nav-dropdown-item text-danger" style="width: 100%; border: none; background: none; font-family: inherit; font-size: inherit; text-align: left; cursor: pointer;">
+                  <svg class="lucide lucide-log-out" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                  </svg>
+                  Keluar
+                </button>
+              </div>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </header>
+
+    <!-- 2. Main Content Wrapper -->
+    <main class="main-content">
+      <slot />
+    </main>
+
+    <!-- 3. Footer Section -->
+    <footer class="main-footer">
+      <div class="container footer-container">
+        <div class="footer-brand">
+          <a href="/" class="logo">
+            {logoUrl ? (
+              <img src={logoUrl} alt={appName} style="max-height: 36px; width: auto; object-fit: contain;" />
+            ) : (
+              appName.toLowerCase() === 'ruangtunggu' ? (
+                <><span class="logo-accent">ruang</span>tunggu</>
+              ) : (
+                appName
+              )
+            )}
+          </a>
+          <p class="footer-tagline">Portal mandiri pengelolaan & registrasi domain handal.</p>
+        </div>
+        
+        <div class="footer-links">
+          <div class="footer-group">
+            <h4>Navigasi</h4>
+            <a href="/">Cari Domain</a>
+            <a href="/whois">Cek WHOIS</a>
+            <a href="/prices">Daftar Harga</a>
+            <a href="/login">Masuk</a>
+            <a href="/register">Pendaftaran</a>
+          </div>
+          <div class="footer-group">
+            <h4>Registrar Partner</h4>
+            <a href="https://rdash.id" target="_blank" rel="noopener noreferrer">RDASH API</a>
+            <a href="https://docs.rdash.id" target="_blank" rel="noopener noreferrer">Dokumentasi</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div class="container flex justify-between items-center footer-bottom-inner">
+          <p>&copy; {new Date().getFullYear()} {appName}. Hak Cipta Dilindungi Undang-Undang.</p>
+          <p class="text-muted">Powered by Astro + TypeScript</p>
+        </div>
+      </div>
+    </footer>
+
+
+    <!-- 4. Client-side Navigation Sync & Theme Switcher Script -->
+    <script>
+      // Theme toggler logic
+      const themeToggleBtn = document.getElementById('theme-toggle-btn');
+      const sunIcon = document.getElementById('sun-icon');
+      const moonIcon = document.getElementById('moon-icon');
+
+      function getInitialTheme() {
+        const storedTheme = localStorage.getItem('theme');
+        if (storedTheme) return storedTheme;
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+
+      function setTheme(theme: string) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+
+        if (theme === 'dark') {
+          sunIcon?.classList.remove('hidden');
+          moonIcon?.classList.add('hidden');
+        } else {
+          sunIcon?.classList.add('hidden');
+          moonIcon?.classList.remove('hidden');
+        }
+      }
+
+      // Initialize Theme
+      const currentTheme = getInitialTheme();
+      setTheme(currentTheme);
+
+      themeToggleBtn?.addEventListener('click', () => {
+        const newTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        setTheme(newTheme);
+      });
+
+      // Function to check auth status and sync navbar
+      function syncNavigation() {
+        const token = localStorage.getItem('token');
+        const userJson = localStorage.getItem('user');
+        
+        const avatarGuest = document.getElementById('profile-avatar-guest');
+        const avatarUser = document.getElementById('profile-avatar-user');
+        const avatarImg = document.getElementById('profile-avatar-img') as HTMLImageElement;
+        
+        const headerGuest = document.getElementById('dropdown-header-guest');
+        const headerAuth = document.getElementById('dropdown-header-auth');
+        
+        const linksGuest = document.getElementById('dropdown-links-guest');
+        const linksAuth = document.getElementById('dropdown-links-auth');
+        
+        const navUserName = document.getElementById('nav-user-name');
+        const navUserEmail = document.getElementById('nav-user-email');
+
+        if (token) {
+          // Logged in state
+          avatarGuest?.classList.add('hidden');
+          avatarUser?.classList.remove('hidden');
+          
+          headerGuest?.classList.add('hidden');
+          headerAuth?.classList.remove('hidden');
+          
+          linksGuest?.classList.add('hidden');
+          linksAuth?.classList.remove('hidden');
+          
+          if (userJson) {
+            try {
+              const user = JSON.parse(userJson);
+              if (navUserName) navUserName.textContent = user.name || 'User';
+              if (navUserEmail) navUserEmail.textContent = user.email || '';
+              if (avatarImg) {
+                avatarImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'U')}&size=32&background=e0e7ff&color=3730a3`;
+              }
+            } catch (e) {
+              console.error('Failed to parse user storage info:', e);
+            }
+          }
+        } else {
+          // Guest state
+          avatarGuest?.classList.remove('hidden');
+          avatarUser?.classList.add('hidden');
+          
+          headerGuest?.classList.remove('hidden');
+          headerAuth?.classList.add('hidden');
+          
+          linksGuest?.classList.remove('hidden');
+          linksAuth?.classList.add('hidden');
+        }
+      }
+
+      // Initial sync
+      syncNavigation();
+
+      // Dropdown toggle logic
+      const profileTriggerBtn = document.getElementById('profile-dropdown-trigger');
+      const profileMenuCard = document.getElementById('profile-dropdown-menu');
+
+      profileTriggerBtn?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        profileMenuCard?.classList.toggle('hidden');
+      });
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', () => {
+        profileMenuCard?.classList.add('hidden');
+      });
+
+      // Handle logout button action
+      const logoutHandler = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+      };
+      
+      document.getElementById('nav-dropdown-logout-btn')?.addEventListener('click', logoutHandler);
+
+      // Listen for localstorage changes (logout in other tabs)
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'token') {
+          syncNavigation();
+        }
+      });
+
+      // Mobile menu toggle
+      const menuToggleBtn = document.getElementById('menu-toggle-btn');
+      const navLinks = document.querySelector('.nav-links');
+      const hamburgerIcon = document.getElementById('hamburger-icon');
+
+      menuToggleBtn?.addEventListener('click', () => {
+        const isOpen = navLinks?.classList.toggle('open');
+        
+        if (hamburgerIcon) {
+          if (isOpen) {
+            // Close icon
+            hamburgerIcon.innerHTML = `<line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>`;
+          } else {
+            // Hamburger icon
+            hamburgerIcon.innerHTML = `<line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line>`;
+          }
+        }
+      });
+    </script>
+
+    <style>
+      /* Layout specific styling */
+      .main-header {
+        background-color: var(--bg-secondary);
+        border-bottom: 1px solid var(--border-color);
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+      }
+
+      .header-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .menu-toggle-btn {
+        display: none;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--text-primary);
+        padding: 8px;
+        align-items: center;
+        justify-content: center;
+        transition: var(--transition-smooth);
+        border-radius: var(--radius-sm);
+      }
+
+      .menu-toggle-btn:hover {
+        background-color: var(--bg-tertiary);
+      }
+
+      .logo {
+        font-family: var(--font-heading);
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        letter-spacing: -0.5px;
+      }
+
+      .logo-accent {
+        color: var(--accent-primary);
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+      }
+
+      .theme-toggle-btn {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--transition-smooth);
+      }
+
+      .theme-toggle-btn:hover {
+        background-color: var(--bg-tertiary);
+        color: var(--text-primary);
+      }
+
+      /* Profile Dropdown Navigation Styling */
+      .profile-trigger-btn {
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-color);
+        color: var(--text-secondary);
+        cursor: pointer;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--transition-smooth);
+        padding: 0;
+        overflow: hidden;
+      }
+
+      .profile-trigger-btn:hover {
+        border-color: var(--border-focus);
+        color: var(--text-primary);
+        background-color: var(--accent-light);
+      }
+
+      .profile-avatar-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+      }
+
+      .nav-avatar-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .nav-profile-dropdown {
+        position: absolute;
+        top: calc(100% + 10px);
+        right: 0;
+        width: 220px;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-lg);
+        z-index: 100;
+        padding: 0.5rem 0;
+        animation: fadeInDropdown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      @keyframes fadeInDropdown {
+        from { opacity: 0; transform: translateY(4px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .nav-dropdown-header {
+        padding: 0.75rem 1rem;
+        text-align: left;
+      }
+
+      .nav-dropdown-header .dropdown-name {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--text-primary);
+      }
+
+      .nav-dropdown-header .dropdown-email {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-top: 0.15rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .nav-dropdown-divider {
+        border: 0;
+        border-top: 1px solid var(--border-color);
+        margin: 0.5rem 0;
+      }
+
+      .nav-dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.6rem 1rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+        transition: var(--transition-smooth);
+        cursor: pointer;
+        text-decoration: none;
+      }
+
+      .nav-dropdown-item:hover {
+        background-color: var(--bg-tertiary);
+        color: var(--text-primary);
+      }
+
+      .nav-dropdown-item svg {
+        width: 14px;
+        height: 14px;
+        stroke-width: 2.25;
+        stroke: currentColor;
+        flex-shrink: 0;
+      }
+
+      .nav-dropdown-item.text-danger {
+        color: var(--error);
+      }
+
+      .nav-dropdown-item.text-danger:hover {
+        background-color: var(--error-bg);
+        color: var(--error);
+      }
+
+      .theme-icon {
+        width: 20px;
+        height: 20px;
+        stroke: currentColor;
+      }
+
+      .nav-group {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+      }
+
+      .nav-item {
+        font-family: var(--font-heading);
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: var(--text-secondary);
+        padding: 0.25rem 0;
+        border-bottom: 2px solid transparent;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+
+      .nav-item svg {
+        width: 15px;
+        height: 15px;
+        stroke-width: 2.25;
+        flex-shrink: 0;
+      }
+
+      .nav-item:hover, .nav-item.active {
+        color: var(--text-primary);
+      }
+
+      .nav-login {
+        color: var(--text-secondary);
+      }
+
+      .nav-login:hover {
+        color: var(--accent-primary);
+      }
+
+      .btn-sm {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+        border-radius: var(--radius-sm);
+      }
+
+      .main-content {
+        min-height: calc(100vh - 73px - 250px); /* Fill space between header and footer */
+      }
+
+      /* Footer */
+      .main-footer {
+        background-color: var(--bg-secondary);
+        border-top: 1px solid var(--border-color);
+        padding-top: 4rem;
+      }
+
+      .footer-container {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 3rem;
+        padding-bottom: 3rem;
+      }
+
+      @media (max-width: 768px) {
+        .footer-container {
+          grid-template-columns: 1fr;
+          gap: 2rem;
+        }
+      }
+
+      .footer-tagline {
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+        margin-top: 1rem;
+        max-width: 320px;
+      }
+
+      .footer-links {
+        display: flex;
+        gap: 4rem;
+      }
+
+      @media (max-width: 480px) {
+        .footer-links {
+          flex-direction: column;
+          gap: 2rem;
+        }
+      }
+
+      .footer-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .footer-group h4 {
+        font-size: 0.9rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-muted);
+        margin-bottom: 0.5rem;
+      }
+
+      .footer-group a {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+      }
+
+      .footer-group a:hover {
+        color: var(--accent-primary);
+      }
+
+      .footer-bottom {
+        border-top: 1px solid var(--border-color);
+        background-color: var(--bg-primary);
+        padding-top: 1.5rem;
+        padding-bottom: 1.5rem;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+      }
+
+      @media (max-width: 640px) {
+        .footer-bottom-inner {
+          flex-direction: column;
+          gap: 0.5rem;
+          text-align: center;
+        }
+      }
+
+      /* Responsive Navigation Mobile Dropdown */
+      @media (max-width: 768px) {
+        .menu-toggle-btn {
+          display: flex;
+        }
+
+        .nav-links {
+          position: absolute;
+          top: 100%;
+          left: 0;
+          right: 0;
+          background: var(--bg-secondary);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+          border-bottom: 1px solid var(--border-color);
+          flex-direction: column;
+          align-items: stretch;
+          padding: 1.5rem;
+          gap: 1rem;
+          opacity: 0;
+          transform: translateY(-10px);
+          pointer-events: none;
+          transition: var(--transition-smooth);
+          box-shadow: var(--shadow-lg);
+        }
+
+        .nav-links.open {
+          opacity: 1;
+          transform: translateY(0);
+          pointer-events: all;
+        }
+
+        .nav-group {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 1rem;
+          width: 100%;
+        }
+
+        .nav-item {
+          padding: 0.5rem 0;
+          width: 100%;
+        }
+        
+        .nav-links .btn {
+          width: 100%;
+          text-align: center;
+        }
+        
+        #theme-toggle-btn {
+          align-self: flex-start;
+          margin-top: 0.5rem;
+        }
+
+        /* Profile Dropdown Overrides on Mobile */
+        .profile-trigger-btn {
+          display: none !important;
+        }
+
+        .nav-profile-dropdown {
+          position: static !important;
+          display: block !important;
+          width: 100% !important;
+          box-shadow: none !important;
+          border: none !important;
+          background: transparent !important;
+          padding: 0 !important;
+          margin-top: 0.5rem !important;
+        }
+
+        .nav-profile-dropdown.hidden {
+          display: block !important;
+        }
+
+        .nav-dropdown-header, .nav-dropdown-divider {
+          display: none !important;
+        }
+
+        .nav-dropdown-item {
+          padding: 0.5rem 0 !important;
+          font-size: 0.95rem !important;
+          font-family: var(--font-heading) !important;
+          font-weight: 600 !important;
+          color: var(--text-secondary) !important;
+        }
+
+        .nav-dropdown-item:hover {
+          background-color: transparent !important;
+          color: var(--text-primary) !important;
+        }
+      }
+
+      /* Helper utility for scripts */
+      .hidden {
+        display: none !important;
+      }
+    </style>
+  </body>
+</html>

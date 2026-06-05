@@ -1,0 +1,620 @@
+---
+import DashboardLayout from '../layouts/DashboardLayout.astro';
+---
+
+<DashboardLayout title="Profil & Keamanan" activeMenu="profile">
+  <div id="private-area" class="hidden">
+    
+    <!-- Title -->
+    <div class="page-header" style="margin-bottom: 24px;">
+      <div>
+        <h1 class="page-title">Profil & Keamanan</h1>
+        <p class="page-subtitle">Kelola informasi pribadi dan pengaturan keamanan akun Anda</p>
+      </div>
+    </div>
+
+    <!-- Alert Notification Box -->
+    <div id="alert-box" class="alert hidden"></div>
+
+    <!-- Main Grid -->
+    <div class="profile-grid">
+      
+      <!-- LEFT COLUMN: Profile Details Form -->
+      <div class="card compact-card">
+        <h3 class="section-title">Informasi Profil & Kontak</h3>
+        <p class="text-secondary mb-4">Informasi di bawah ini digunakan untuk pendaftaran dan kepemilikan domain Anda.</p>
+
+        <form id="profile-form">
+          <div class="form-grid-compact">
+            <div class="form-group mb-3">
+              <label class="form-label-compact" for="name">Nama Lengkap *</label>
+              <input type="text" id="name" class="form-control-compact" required disabled />
+            </div>
+            <div class="form-group mb-3">
+              <label class="form-label-compact" for="email">Alamat Email (Akun)</label>
+              <input type="email" id="email" class="form-control-compact" disabled style="cursor: not-allowed;" />
+            </div>
+          </div>
+
+          <div class="form-grid-compact">
+            <div class="form-group mb-3">
+              <label class="form-label-compact" for="organization">Organisasi / Perusahaan *</label>
+              <input type="text" id="organization" class="form-control-compact" required disabled />
+            </div>
+            <div class="form-group mb-3">
+              <label class="form-label-compact" for="voice">Nomor Telepon (Min. 9 Digit) *</label>
+              <input type="tel" id="voice" class="form-control-compact" required disabled />
+            </div>
+          </div>
+
+          <div class="form-group mb-3">
+            <label class="form-label-compact" for="street_1">Alamat Lengkap (Baris 1) *</label>
+            <input type="text" id="street_1" class="form-control-compact" required disabled />
+          </div>
+
+          <div class="form-group mb-3">
+            <label class="form-label-compact" for="street_2">Alamat Lengkap (Baris 2 - Opsional)</label>
+            <input type="text" id="street_2" class="form-control-compact" disabled />
+          </div>
+
+          <div class="form-grid-compact">
+            <div class="form-group mb-3">
+              <label class="form-label-compact" for="state">Provinsi *</label>
+              <select id="state" class="form-control-compact" required disabled style="height: 32px; font-size: 13px; padding-top: 0; padding-bottom: 0; padding-left: 8px;">
+                <option value="">Pilih Provinsi</option>
+              </select>
+            </div>
+            <div class="form-group mb-3">
+              <label class="form-label-compact" for="city">Kabupaten / Kota *</label>
+              <select id="city" class="form-control-compact" required disabled style="height: 32px; font-size: 13px; padding-top: 0; padding-bottom: 0; padding-left: 8px;">
+                <option value="">Pilih Kabupaten/Kota</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-grid-compact">
+            <div class="form-group mb-3">
+              <label class="form-label-compact" for="district">Kecamatan *</label>
+              <select id="district" class="form-control-compact" required disabled style="height: 32px; font-size: 13px; padding-top: 0; padding-bottom: 0; padding-left: 8px;">
+                <option value="">Pilih Kecamatan</option>
+              </select>
+            </div>
+            <div class="form-group mb-3">
+              <label class="form-label-compact" for="village">Kelurahan *</label>
+              <select id="village" class="form-control-compact" required disabled style="height: 32px; font-size: 13px; padding-top: 0; padding-bottom: 0; padding-left: 8px;">
+                <option value="">Pilih Kelurahan</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-grid-compact">
+            <div class="form-group mb-3">
+              <label class="form-label-compact" for="postal_code">Kode Pos *</label>
+              <input type="text" id="postal_code" class="form-control-compact" required disabled />
+            </div>
+            <div class="form-group mb-3">
+              <label class="form-label-compact" for="country_code">Kode Negara (2 Karakter) *</label>
+              <input type="text" id="country_code" class="form-control-compact" required maxlength="2" disabled />
+            </div>
+          </div>
+
+          <!-- Profile Actions Group -->
+          <div class="flex gap-2 mt-4" style="width: 100%;">
+            <button type="button" id="profile-edit-btn" class="btn btn-outline" style="width: 100%; height: 2.75rem;">
+              <svg class="lucide lucide-edit-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;display:inline-block;margin-right:4px;"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+              Edit Profil
+            </button>
+            <div id="profile-editing-buttons" class="flex gap-2 hidden" style="width: 100%;">
+              <button type="submit" id="profile-submit-btn" class="btn btn-primary" style="flex: 2; height: 2.75rem;">
+                Simpan Perubahan
+              </button>
+              <button type="button" id="profile-cancel-btn" class="btn btn-secondary" style="flex: 1; height: 2.75rem;">
+                Batal
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- RIGHT COLUMN: Password Change Form -->
+      <div class="card compact-card align-start">
+        <h3 class="section-title">Ubah Kata Sandi</h3>
+        <p class="text-secondary mb-4">Demi keamanan akun, pastikan Anda menggunakan kata sandi yang kuat dan unik.</p>
+
+        <form id="password-form">
+          <div class="form-group mb-3">
+            <label class="form-label-compact" for="oldPassword">Kata Sandi Lama *</label>
+            <input type="password" id="oldPassword" class="form-control-compact" required disabled />
+          </div>
+
+          <div class="form-group mb-3">
+            <label class="form-label-compact" for="newPassword">Kata Sandi Baru (Min. 6 Karakter) *</label>
+            <input type="password" id="newPassword" class="form-control-compact" required minlength="6" disabled />
+          </div>
+
+          <div class="form-group mb-3">
+            <label class="form-label-compact" for="confirmNewPassword">Konfirmasi Kata Sandi Baru *</label>
+            <input type="password" id="confirmNewPassword" class="form-control-compact" required minlength="6" disabled />
+          </div>
+
+          <!-- Password Actions Group -->
+          <div class="flex gap-2 mt-4" style="width: 100%;">
+            <button type="button" id="password-edit-btn" class="btn btn-outline" style="width: 100%; height: 2.75rem;">
+              <svg class="lucide lucide-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;display:inline-block;margin-right:4px;"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              Ubah Kata Sandi
+            </button>
+            <div id="password-editing-buttons" class="flex gap-2 hidden" style="width: 100%;">
+              <button type="submit" id="password-submit-btn" class="btn btn-primary" style="flex: 2; height: 2.75rem;">
+                Simpan Kata Sandi
+              </button>
+              <button type="button" id="password-cancel-btn" class="btn btn-secondary" style="flex: 1; height: 2.75rem;">
+                Batal
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    import { apiFetch } from '../utils/api';
+    import { requireLogin } from '../utils/auth';
+    import { initRegionDropdowns, fetchProvinces, fetchRegencies, fetchDistricts, fetchVillages } from '../utils/region';
+
+    requireLogin();
+
+    const privateArea = document.getElementById('private-area') as HTMLDivElement;
+    const alertBox = document.getElementById('alert-box') as HTMLDivElement;
+
+    // Profile fields
+    const profileForm = document.getElementById('profile-form') as HTMLFormElement;
+    const nameInput = document.getElementById('name') as HTMLInputElement;
+    const emailInput = document.getElementById('email') as HTMLInputElement;
+    const orgInput = document.getElementById('organization') as HTMLInputElement;
+    const voiceInput = document.getElementById('voice') as HTMLInputElement;
+    const street1Input = document.getElementById('street_1') as HTMLInputElement;
+    const street2Input = document.getElementById('street_2') as HTMLInputElement;
+    
+    // Changing to select dropdowns
+    const cityInput = document.getElementById('city') as HTMLSelectElement;
+    const stateInput = document.getElementById('state') as HTMLSelectElement;
+    const districtInput = document.getElementById('district') as HTMLSelectElement;
+    const villageInput = document.getElementById('village') as HTMLSelectElement;
+    
+    const postalInput = document.getElementById('postal_code') as HTMLInputElement;
+    const countryInput = document.getElementById('country_code') as HTMLInputElement;
+    const profileBtn = document.getElementById('profile-submit-btn') as HTMLButtonElement;
+    const profileEditBtn = document.getElementById('profile-edit-btn') as HTMLButtonElement;
+    const profileCancelBtn = document.getElementById('profile-cancel-btn') as HTMLButtonElement;
+    const profileEditingGroup = document.getElementById('profile-editing-buttons') as HTMLDivElement;
+
+    // Initialize cascading Indonesian administrative region dropdowns
+    if (stateInput && cityInput && districtInput && villageInput) {
+      initRegionDropdowns({
+        provinceSelect: stateInput,
+        regencySelect: cityInput,
+        districtSelect: districtInput,
+        villageSelect: villageInput
+      });
+    }
+
+    // Password fields
+    const passwordForm = document.getElementById('password-form') as HTMLFormElement;
+    const oldPasswordInput = document.getElementById('oldPassword') as HTMLInputElement;
+    const newPasswordInput = document.getElementById('newPassword') as HTMLInputElement;
+    const confirmNewPasswordInput = document.getElementById('confirmNewPassword') as HTMLInputElement;
+    const passwordBtn = document.getElementById('password-submit-btn') as HTMLButtonElement;
+    const passwordEditBtn = document.getElementById('password-edit-btn') as HTMLButtonElement;
+    const passwordCancelBtn = document.getElementById('password-cancel-btn') as HTMLButtonElement;
+    const passwordEditingGroup = document.getElementById('password-editing-buttons') as HTMLDivElement;
+
+    // Original user details backup
+    let originalUserData = {
+      name: '',
+      organization: '',
+      voice: '',
+      street_1: '',
+      street_2: '',
+      city: '',
+      state: '',
+      postal_code: '',
+      country_code: '',
+    };
+
+    const profileInputs = [nameInput, orgInput, voiceInput, street1Input, street2Input, cityInput, stateInput, districtInput, villageInput, postalInput, countryInput];
+    const passwordInputs = [oldPasswordInput, newPasswordInput, confirmNewPasswordInput];
+
+    // Helper functions to manage read-only / edit states
+    function setProfileFormEditable(editable: boolean) {
+      profileInputs.forEach(input => {
+        if (input) input.disabled = !editable;
+      });
+      if (editable) {
+        profileEditBtn.classList.add('hidden');
+        profileEditingGroup.classList.remove('hidden');
+      } else {
+        profileEditBtn.classList.remove('hidden');
+        profileEditingGroup.classList.add('hidden');
+      }
+    }
+
+    function setPasswordFormEditable(editable: boolean) {
+      passwordInputs.forEach(input => {
+        if (input) input.disabled = !editable;
+      });
+      if (editable) {
+        passwordEditBtn.classList.add('hidden');
+        passwordEditingGroup.classList.remove('hidden');
+      } else {
+        passwordEditBtn.classList.remove('hidden');
+        passwordEditingGroup.classList.add('hidden');
+        passwordForm.reset();
+      }
+    }
+
+    async function loadProfile() {
+      privateArea.classList.remove('hidden');
+
+      try {
+        const response = await apiFetch('/api/auth/profile');
+        if (response.success && response.user) {
+          const user = response.user;
+          nameInput.value = user.name || '';
+          emailInput.value = user.email || '';
+          orgInput.value = user.organization || '';
+          voiceInput.value = user.voice || '';
+          street1Input.value = user.street_1 || '';
+          postalInput.value = user.postal_code || '';
+          countryInput.value = user.country_code || '';
+
+          // Parse street_2 to extract original street_2, district, and village
+          let dbStreet2 = user.street_2 || '';
+          let parsedDistrict = '';
+          let parsedVillage = '';
+          const regionRegex = /(?:,\s*)?Kec\.\s+([^,]+),\s*Kel\.\s+([^,]+)$/i;
+          const match = dbStreet2.match(regionRegex);
+          if (match) {
+            parsedDistrict = match[1].trim();
+            parsedVillage = match[2].trim();
+            dbStreet2 = dbStreet2.replace(regionRegex, '').trim();
+          }
+          street2Input.value = dbStreet2;
+
+          // Keep a backup of the original data (including the raw db street_2)
+          originalUserData = {
+            name: user.name || '',
+            organization: user.organization || '',
+            voice: user.voice || '',
+            street_1: user.street_1 || '',
+            street_2: user.street_2 || '',
+            city: user.city || '',
+            state: user.state || '',
+            postal_code: user.postal_code || '',
+            country_code: user.country_code || '',
+          };
+
+          // Sequentially load administrative regions and select matches
+          const provinces = await fetchProvinces();
+          stateInput.innerHTML = '<option value="">Pilih Provinsi</option>';
+          let matchedProvinceId = '';
+          provinces.forEach((p) => {
+            const option = document.createElement('option');
+            option.value = p.id;
+            option.textContent = p.name;
+            if (p.name.toLowerCase() === (user.state || '').toLowerCase()) {
+              option.selected = true;
+              matchedProvinceId = p.id;
+            }
+            stateInput.appendChild(option);
+          });
+
+          if (matchedProvinceId) {
+            const regencies = await fetchRegencies(matchedProvinceId);
+            cityInput.innerHTML = '<option value="">Pilih Kabupaten/Kota</option>';
+            let matchedRegencyId = '';
+            regencies.forEach((r) => {
+              const option = document.createElement('option');
+              option.value = r.id;
+              option.textContent = r.name;
+              if (r.name.toLowerCase() === (user.city || '').toLowerCase()) {
+                option.selected = true;
+                matchedRegencyId = r.id;
+              }
+              cityInput.appendChild(option);
+            });
+            cityInput.disabled = true; // Kept disabled until "Edit Profil" is clicked
+
+            if (matchedRegencyId && parsedDistrict) {
+              const districts = await fetchDistricts(matchedRegencyId);
+              districtInput.innerHTML = '<option value="">Pilih Kecamatan</option>';
+              let matchedDistrictId = '';
+              districts.forEach((d) => {
+                const option = document.createElement('option');
+                option.value = d.id;
+                option.textContent = d.name;
+                if (d.name.toLowerCase() === parsedDistrict.toLowerCase()) {
+                  option.selected = true;
+                  matchedDistrictId = d.id;
+                }
+                districtInput.appendChild(option);
+              });
+              districtInput.disabled = true;
+
+              if (matchedDistrictId && parsedVillage) {
+                const villages = await fetchVillages(matchedDistrictId);
+                villageInput.innerHTML = '<option value="">Pilih Kelurahan</option>';
+                villages.forEach((v) => {
+                  const option = document.createElement('option');
+                  option.value = v.id;
+                  option.textContent = v.name;
+                  if (v.name.toLowerCase() === parsedVillage.toLowerCase()) {
+                    option.selected = true;
+                  }
+                  villageInput.appendChild(option);
+                });
+                villageInput.disabled = true;
+              }
+            }
+          }
+
+          // Sync local storage user info just in case name changed
+          const localUser = localStorage.getItem('user');
+          if (localUser) {
+            const parsed = JSON.parse(localUser);
+            parsed.name = user.name;
+            localStorage.setItem('user', JSON.stringify(parsed));
+          }
+        }
+      } catch (err: any) {
+        console.error('Failed to load profile:', err);
+        showAlert(err.message || 'Gagal memuat profil.', 'error');
+      }
+    }
+
+    // Toggle button event listeners
+    profileEditBtn?.addEventListener('click', () => {
+      setProfileFormEditable(true);
+      hideAlert();
+    });
+
+    profileCancelBtn?.addEventListener('click', () => {
+      // Revert values
+      nameInput.value = originalUserData.name;
+      orgInput.value = originalUserData.organization;
+      voiceInput.value = originalUserData.voice;
+      street1Input.value = originalUserData.street_1;
+      street2Input.value = originalUserData.street_2;
+      cityInput.value = originalUserData.city;
+      stateInput.value = originalUserData.state;
+      postalInput.value = originalUserData.postal_code;
+      countryInput.value = originalUserData.country_code;
+
+      setProfileFormEditable(false);
+      hideAlert();
+    });
+
+    passwordEditBtn?.addEventListener('click', () => {
+      setPasswordFormEditable(true);
+      hideAlert();
+    });
+
+    passwordCancelBtn?.addEventListener('click', () => {
+      setPasswordFormEditable(false);
+      hideAlert();
+    });
+
+    // Handle profile update submit
+    profileForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      profileBtn.disabled = true;
+      profileBtn.innerText = 'Menyimpan...';
+      hideAlert();
+
+      const originalStreet2 = street2Input.value.trim();
+      
+      // Extract option text content from select elements
+      const state = stateInput.options[stateInput.selectedIndex]?.textContent || '';
+      const city = cityInput.options[cityInput.selectedIndex]?.textContent || '';
+      const district = districtInput.options[districtInput.selectedIndex]?.textContent || '';
+      const village = villageInput.options[villageInput.selectedIndex]?.textContent || '';
+
+      // Construct a detailed address with district and sub-district information for domain registration
+      let street_2 = originalStreet2 || null;
+      if (district && village) {
+        const regionAddress = `Kec. ${district}, Kel. ${village}`;
+        street_2 = originalStreet2 ? `${originalStreet2}, ${regionAddress}` : regionAddress;
+      }
+
+      const payload = {
+        name: nameInput.value.trim(),
+        organization: orgInput.value.trim(),
+        voice: voiceInput.value.trim(),
+        street_1: street1Input.value.trim(),
+        street_2: street_2,
+        city: city,
+        state: state,
+        postal_code: postalInput.value.trim(),
+        country_code: countryInput.value.trim().toUpperCase(),
+      };
+
+      try {
+        const response = await apiFetch('/api/auth/profile', {
+          method: 'PUT',
+          body: JSON.stringify(payload),
+        });
+
+        showAlert(response.message || 'Profil berhasil diperbarui.', 'success');
+        
+        // Update original data backup
+        originalUserData = {
+          name: payload.name,
+          organization: payload.organization,
+          voice: payload.voice,
+          street_1: payload.street_1,
+          street_2: payload.street_2 || '',
+          city: payload.city,
+          state: payload.state,
+          postal_code: payload.postal_code,
+          country_code: payload.country_code,
+        };
+
+        // Disable profile inputs
+        setProfileFormEditable(false);
+
+        // Update local storage name to update topbar avatar name dynamically
+        const localUser = localStorage.getItem('user');
+        if (localUser) {
+          const parsed = JSON.parse(localUser);
+          parsed.name = payload.name;
+          localStorage.setItem('user', JSON.stringify(parsed));
+          
+          // Re-render header name
+          const nameEl = document.getElementById('top-user-name');
+          if (nameEl) nameEl.textContent = payload.name;
+        }
+
+      } catch (err: any) {
+        console.error('Failed to update profile:', err);
+        showAlert(err.message || 'Gagal memperbarui profil.', 'error');
+      } finally {
+        profileBtn.disabled = false;
+        profileBtn.innerText = 'Simpan Perubahan';
+      }
+    });
+
+    // Handle password change submit
+    passwordForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const oldPassword = oldPasswordInput.value.trim();
+      const newPassword = newPasswordInput.value.trim();
+      const confirmNewPassword = confirmNewPasswordInput.value.trim();
+
+      if (newPassword !== confirmNewPassword) {
+        showAlert('Konfirmasi kata sandi baru tidak cocok.', 'error');
+        return;
+      }
+
+      passwordBtn.disabled = true;
+      passwordBtn.innerText = 'Memproses...';
+      hideAlert();
+
+      try {
+        const response = await apiFetch('/api/auth/change-password', {
+          method: 'POST',
+          body: JSON.stringify({ oldPassword, newPassword }),
+        });
+
+        showAlert(response.message || 'Kata sandi berhasil diubah.', 'success');
+        setPasswordFormEditable(false);
+      } catch (err: any) {
+        console.error('Failed to change password:', err);
+        showAlert(err.message || 'Gagal mengubah kata sandi.', 'error');
+      } finally {
+        passwordBtn.disabled = false;
+        passwordBtn.innerText = 'Simpan Kata Sandi';
+      }
+    });
+
+    function showAlert(message: string, type: 'success' | 'error') {
+      alertBox.className = `alert alert-${type}`;
+      alertBox.innerText = message;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function hideAlert() {
+      alertBox.className = 'alert hidden';
+    }
+
+    loadProfile();
+  </script>
+
+  <style>
+    .profile-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    @media (max-width: 900px) {
+      .profile-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .compact-card {
+      padding: 24px !important;
+      border-radius: 8px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    /* Classic Compact Form Fields */
+    .form-grid-compact {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 600px) {
+      .form-grid-compact {
+        grid-template-columns: 1fr;
+        gap: 0;
+      }
+    }
+
+    .form-label-compact {
+      display: block;
+      font-size: 11.5px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: var(--text-secondary);
+    }
+
+    .form-control-compact {
+      width: 100%;
+      font-family: var(--font);
+      font-size: 12.5px;
+      padding: 8px 10px;
+      background-color: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .form-control-compact:focus {
+      border-color: var(--accent);
+      background-color: var(--surface);
+    }
+
+    .form-control-compact:disabled {
+      background-color: var(--bg-tertiary);
+      border-color: var(--border-color);
+      cursor: not-allowed;
+      color: var(--text-muted);
+    }
+
+    .mb-3 {
+      margin-bottom: 12px !important;
+    }
+
+    .mb-4 {
+      margin-bottom: 16px !important;
+    }
+
+    .align-start {
+      align-self: start;
+    }
+  </style>
+</DashboardLayout>

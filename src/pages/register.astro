@@ -1,0 +1,486 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Daftar Akun Baru">
+  <section class="auth-section section">
+    <div class="container auth-container" id="auth-layout-container">
+      
+      <!-- Left Column: Form -->
+      <div class="auth-form-column">
+        <div class="card auth-card">
+          <div class="auth-header text-center mb-4">
+            <h2>Buat Akun Ruangtunggu</h2>
+            <p class="text-secondary mt-1">Daftar sekarang untuk mulai mengelola domain Anda secara mandiri.</p>
+          </div>
+
+          <!-- Notification Banner -->
+          <div id="alert-box" class="alert hidden"></div>
+
+          <form id="register-form" class="register-form">
+            <div class="form-section-title">Informasi Akun Lokal</div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label" for="name">Nama Lengkap *</label>
+                <input type="text" id="name" class="form-control" placeholder="Nama Anda" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="email">Alamat Email *</label>
+                <input type="email" id="email" class="form-control" placeholder="nama@email.com" required />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="password">Kata Sandi (Min. 6 Karakter) *</label>
+              <input type="password" id="password" class="form-control" placeholder="••••••••" required minlength="6" />
+            </div>
+
+            <div class="form-section-title mt-4">Informasi Profil Domain (Sinkronisasi Registrar)</div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label" for="organization">Nama Organisasi / Perusahaan *</label>
+                <input type="text" id="organization" class="form-control" placeholder="Contoh: Personal / PT Bisnis" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="voice">Nomor Telepon (Min. 9 Digit) *</label>
+                <input type="tel" id="voice" class="form-control" placeholder="+62812345678" required />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="street_1">Alamat Lengkap (Baris 1) *</label>
+              <input type="text" id="street_1" class="form-control" placeholder="Nama jalan, nomor rumah" required />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="street_2">Alamat Lengkap (Baris 2 - Opsional)</label>
+              <input type="text" id="street_2" class="form-control" placeholder="Nomor unit, lantai, gedung" />
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label" for="state">Provinsi *</label>
+                <select id="state" class="form-control" required>
+                  <option value="">Pilih Provinsi</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="city">Kabupaten / Kota *</label>
+                <select id="city" class="form-control" required disabled>
+                  <option value="">Pilih Kabupaten/Kota</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label" for="district">Kecamatan *</label>
+                <select id="district" class="form-control" required disabled>
+                  <option value="">Pilih Kecamatan</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="village">Kelurahan *</label>
+                <select id="village" class="form-control" required disabled>
+                  <option value="">Pilih Kelurahan</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label" for="postal_code">Kode Pos *</label>
+                <input type="text" id="postal_code" class="form-control" placeholder="Kode Pos" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="country_code">Kode Negara (2 Karakter) *</label>
+                <input type="text" id="country_code" class="form-control" placeholder="ID" required maxlength="2" />
+              </div>
+            </div>
+
+            <button type="submit" id="submit-btn" class="btn btn-primary btn-block mt-4">
+              Daftar Sekarang
+            </button>
+          </form>
+
+          <div class="auth-footer text-center mt-4">
+            <p class="text-secondary">Sudah memiliki akun? <a href="/login">Masuk di sini</a></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Transaction Details Sidebar -->
+      <div class="transaction-details-column hidden" id="transaction-sidebar">
+        <div class="card sidebar-sticky-card">
+          <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 18px; color: var(--text-primary); border-bottom: 1px dashed var(--border-color); padding-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+            <span>🛒</span> Rincian Transaksi Domain
+          </h3>
+          
+          <div style="margin-bottom: 18px;">
+            <span style="font-size: 10.5px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; display: block; margin-bottom: 2px;">Domain Pilihan:</span>
+            <strong id="sidebar-domain-name" style="font-family: monospace; font-size: 14px; color: var(--accent-primary); background: var(--bg-tertiary); padding: 2px 8px; border-radius: 4px; border: 1px solid var(--border-color);">loading...</strong>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 12px; font-size: 13px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; margin-bottom: 16px;">
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--text-secondary);">Harga Registrasi (1 thn):</span>
+              <span id="sidebar-price-base" style="font-weight: 600; color: var(--text-primary);">Rp 0</span>
+            </div>
+            
+            <div id="sidebar-promo-row" class="hidden" style="display: flex; justify-content: space-between;">
+              <span style="color: #ef4444; font-weight: 600;">Diskon Promo:</span>
+              <span id="sidebar-price-saving" style="font-weight: 600; color: #ef4444;">-Rp 0</span>
+            </div>
+
+            <div id="sidebar-tax-row" style="display: flex; justify-content: space-between;">
+              <span id="sidebar-tax-label" style="color: var(--text-secondary);">PPN / Pajak (11%):</span>
+              <span id="sidebar-price-tax" style="font-weight: 600; color: var(--text-primary);">Rp 0</span>
+            </div>
+
+
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--text-secondary);">Biaya Gerbang / Admin:</span>
+              <span id="sidebar-price-admin" style="font-weight: 600; color: var(--text-primary);">Rp 2.500</span>
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <span style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Total Bayar (Estimasi):</span>
+            <strong id="sidebar-price-total" style="font-size: 18px; font-weight: 800; color: var(--accent-primary);">Rp 0</strong>
+          </div>
+
+          <div class="alert alert-success" style="font-size: 11px; line-height: 1.5; padding: 10px 12px; border-radius: 6px; background: rgba(22, 163, 74, 0.05); color: #16a34a; border: 1px solid rgba(22, 163, 74, 0.15); margin-bottom: 0;">
+            🔒 Pembayaran dan aktivasi domain ini akan dilakukan setelah pendaftaran akun baru Anda berhasil dan email Anda telah diverifikasi.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <script>
+    import { apiFetch } from '../utils/api';
+    import { requireGuest } from '../utils/auth';
+    import { initRegionDropdowns } from '../utils/region';
+
+    // 1. Route guarding: redirect to dashboard if already logged in
+    requireGuest();
+
+    const registerForm = document.getElementById('register-form') as HTMLFormElement;
+    const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+    const alertBox = document.getElementById('alert-box') as HTMLDivElement;
+
+    // Initialize Indonesian administrative region dropdowns
+    const provinceSelect = document.getElementById('state') as HTMLSelectElement;
+    const regencySelect = document.getElementById('city') as HTMLSelectElement;
+    const districtSelect = document.getElementById('district') as HTMLSelectElement;
+    const villageSelect = document.getElementById('village') as HTMLSelectElement;
+
+    if (provinceSelect && regencySelect && districtSelect && villageSelect) {
+      initRegionDropdowns({
+        provinceSelect,
+        regencySelect,
+        districtSelect,
+        villageSelect
+      });
+    }
+
+    // elements for 2-column dynamic transaction sidebar
+    const container = document.getElementById('auth-layout-container');
+    const sidebar = document.getElementById('transaction-sidebar');
+    const sidebarDomainName = document.getElementById('sidebar-domain-name');
+    const sidebarPriceBase = document.getElementById('sidebar-price-base');
+    const sidebarPromoRow = document.getElementById('sidebar-promo-row');
+    const sidebarPriceSaving = document.getElementById('sidebar-price-saving');
+    const sidebarPriceTax = document.getElementById('sidebar-price-tax');
+    const sidebarPriceTotal = document.getElementById('sidebar-price-total');
+
+    // Prefill query parameter domain if available
+    let domainParam = '';
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      domainParam = params.get('domain') || '';
+    }
+
+    async function initTransactionSidebar() {
+      if (!domainParam || !container || !sidebar || !sidebarDomainName) return;
+
+      // 1. Show sidebar layout
+      container.classList.add('has-domain-sidebar');
+      sidebar.classList.remove('hidden');
+      sidebarDomainName.textContent = domainParam.toLowerCase();
+
+      // 2. Fetch prices to show correct estimate
+      let prices = [];
+      try {
+        const response = await apiFetch('/api/domains/prices', { requireAuth: false });
+        if (response.success && response.data) {
+          prices = response.data;
+        }
+      } catch (err) {
+        console.warn('Failed to load prices for registration sidebar, using fallbacks:', err);
+      }
+
+      // 3. Extract extension and match price
+      const cleanDomain = domainParam.trim().toLowerCase();
+      const firstDot = cleanDomain.indexOf('.');
+      const ext = firstDot !== -1 ? cleanDomain.substring(firstDot) : '';
+
+      // Find price matching the extension
+      let pricing = prices.find((p: any) => p.extension === ext);
+      
+      // Fallback prices if API failed or TLD not found
+      if (!pricing) {
+        const fallbacks: Record<string, any> = {
+          '.com': { registerPrice: 145000, regularRegisterPrice: 145000, promo: false },
+          '.net': { registerPrice: 155000, regularRegisterPrice: 155000, promo: false },
+          '.id': { registerPrice: 220000, regularRegisterPrice: 220000, promo: false },
+          '.co.id': { registerPrice: 275000, regularRegisterPrice: 275000, promo: false },
+          '.web.id': { registerPrice: 75000, regularRegisterPrice: 85000, promo: true },
+          '.my.id': { registerPrice: 25000, regularRegisterPrice: 35000, promo: true },
+        };
+        pricing = fallbacks[ext] || { registerPrice: 145000, regularRegisterPrice: 145000, promo: false };
+      }
+
+      const registerPrice = pricing.registerPrice;
+      const regularPrice = pricing.regularRegisterPrice || registerPrice;
+      const isPromo = pricing.promo && regularPrice > registerPrice;
+
+      // Populate base price
+      if (sidebarPriceBase) {
+        sidebarPriceBase.textContent = `Rp ${regularPrice.toLocaleString('id-ID')}`;
+      }
+
+      // Promo row handling
+      if (isPromo) {
+        const saving = regularPrice - registerPrice;
+        if (sidebarPromoRow && sidebarPriceSaving) {
+          sidebarPromoRow.classList.remove('hidden');
+          sidebarPriceSaving.textContent = `-Rp ${saving.toLocaleString('id-ID')}`;
+        }
+      } else {
+        sidebarPromoRow?.classList.add('hidden');
+      }
+
+      // Fetch system settings
+      let taxEnabled = true;
+      let taxRate = 11;
+      try {
+        const settingsRes = await apiFetch('/api/settings', { requireAuth: false });
+        if (settingsRes && settingsRes.success && settingsRes.data) {
+          taxEnabled = settingsRes.data.tax_enabled !== false;
+          taxRate = parseFloat(settingsRes.data.tax_rate) || 0;
+        }
+      } catch (err) {
+        console.warn('Failed to load settings in register.astro sidebar:', err);
+      }
+
+      // Calculations
+      const taxRatePercent = taxEnabled ? taxRate : 0;
+      const tax = Math.round(registerPrice * (taxRatePercent / 100));
+      const admin = 2500;
+      const grandTotal = registerPrice + tax + admin;
+
+      const sidebarTaxRow = document.getElementById('sidebar-tax-row');
+      const sidebarTaxLabel = document.getElementById('sidebar-tax-label');
+
+      if (taxEnabled) {
+        if (sidebarTaxRow) sidebarTaxRow.style.display = 'flex';
+        if (sidebarTaxLabel) sidebarTaxLabel.textContent = `PPN / Pajak (${taxRatePercent}%):`;
+        if (sidebarPriceTax) sidebarPriceTax.textContent = `Rp ${tax.toLocaleString('id-ID')}`;
+      } else {
+        if (sidebarTaxRow) sidebarTaxRow.style.display = 'none';
+        if (sidebarPriceTax) sidebarPriceTax.textContent = `Rp 0`;
+      }
+      if (sidebarPriceTotal) {
+        sidebarPriceTotal.textContent = `Rp ${grandTotal.toLocaleString('id-ID')}`;
+      }
+    }
+
+
+    // Initialize transaction details if domain query exists
+    initTransactionSidebar();
+
+    registerForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // Collect values
+      const name = (document.getElementById('name') as HTMLInputElement).value.trim();
+      const email = (document.getElementById('email') as HTMLInputElement).value.replace(/\s+/g, '');
+      const password = (document.getElementById('password') as HTMLInputElement).value.trim();
+      const organization = (document.getElementById('organization') as HTMLInputElement).value;
+      const voice = (document.getElementById('voice') as HTMLInputElement).value;
+      const street_1 = (document.getElementById('street_1') as HTMLInputElement).value;
+      
+      const originalStreet2 = (document.getElementById('street_2') as HTMLInputElement).value.trim();
+      
+      // Extract option text content from select elements
+      const stateSelect = document.getElementById('state') as HTMLSelectElement;
+      const state = stateSelect.options[stateSelect.selectedIndex]?.textContent || '';
+      
+      const citySelect = document.getElementById('city') as HTMLSelectElement;
+      const city = citySelect.options[citySelect.selectedIndex]?.textContent || '';
+      
+      const districtSelect = document.getElementById('district') as HTMLSelectElement;
+      const district = districtSelect.options[districtSelect.selectedIndex]?.textContent || '';
+      
+      const villageSelect = document.getElementById('village') as HTMLSelectElement;
+      const village = villageSelect.options[villageSelect.selectedIndex]?.textContent || '';
+
+      // Construct a detailed address with district and sub-district information for domain registration
+      let street_2 = originalStreet2 || undefined;
+      if (district && village) {
+        const regionAddress = `Kec. ${district}, Kel. ${village}`;
+        street_2 = originalStreet2 ? `${originalStreet2}, ${regionAddress}` : regionAddress;
+      }
+
+      const postal_code = (document.getElementById('postal_code') as HTMLInputElement).value;
+      const country_code = (document.getElementById('country_code') as HTMLInputElement).value.toUpperCase();
+
+      // UI Loading state
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Memproses...';
+      hideAlert();
+
+      try {
+        await apiFetch('/api/auth/register', {
+          method: 'POST',
+          requireAuth: false,
+          body: JSON.stringify({
+            name,
+            email,
+            password,
+            organization,
+            voice,
+            street_1,
+            street_2,
+            city,
+            state,
+            postal_code,
+            country_code,
+          }),
+        });
+
+        showAlert('Pendaftaran Berhasil! Silakan periksa email masuk/spam Anda untuk memverifikasi akun.', 'success');
+        registerForm.reset();
+        
+      } catch (err: any) {
+        console.error('Registration failed:', err);
+        let errorMsg = err.message || 'Pendaftaran gagal. Silakan coba lagi.';
+        
+        if (err.errors) {
+          const errorFields = Object.entries(err.errors)
+            .map(([field, msgs]: any) => `${field}: ${msgs.join(', ')}`)
+            .join('; ');
+          errorMsg = `Validasi gagal: ${errorFields}`;
+        }
+
+        showAlert(errorMsg, 'error');
+
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Daftar Sekarang';
+      }
+    });
+
+    function showAlert(message: string, type: 'success' | 'error') {
+      alertBox.className = `alert alert-${type}`;
+      alertBox.innerText = message;
+    }
+
+    function hideAlert() {
+      alertBox.className = 'alert hidden';
+    }
+  </script>
+
+  <style>
+    .auth-section {
+      background-color: var(--bg-primary);
+      min-height: calc(100vh - 73px - 100px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-top: 4rem;
+      padding-bottom: 4rem;
+    }
+
+    .auth-container {
+      width: 100%;
+      max-width: 650px;
+      padding: 0 1.25rem;
+      transition: max-width 0.3s ease;
+    }
+
+    .auth-container.has-domain-sidebar {
+      max-width: 1100px;
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    @media (max-width: 868px) {
+      .auth-container.has-domain-sidebar {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+    }
+
+    .auth-card {
+      padding: 2.25rem 1.5rem !important;
+    }
+
+    @media (min-width: 576px) {
+      .auth-card {
+        padding: 3rem 2.5rem !important;
+      }
+    }
+
+    .sidebar-sticky-card {
+      padding: 28px !important;
+      border-radius: 12px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-md);
+      position: sticky;
+      top: 100px;
+    }
+
+    .form-section-title {
+      font-family: var(--font-heading);
+      font-size: 0.95rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--accent-primary);
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .btn-block {
+      width: 100%;
+      height: 3rem;
+      font-size: 1.05rem;
+    }
+
+    /* Alert styles */
+    .alert {
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 20px;
+    }
+    .alert-success {
+      background: #dcfce7;
+      color: #16a34a;
+      border: 1px solid #bbf7d0;
+    }
+    .alert-error {
+      background: #fee2e2;
+      color: #dc2626;
+      border: 1px solid #fecaca;
+    }
+  </style>
+</Layout>

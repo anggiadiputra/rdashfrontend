@@ -1,0 +1,161 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Verifikasi Alamat Email">
+  <section class="verify-section section">
+    <div class="container verify-container text-center">
+      <div class="card verify-card">
+        
+        <!-- 1. LOADING STATE (Default Visible) -->
+        <div id="state-loading" class="state-wrapper">
+          <div class="spinner"></div>
+          <h2 class="mt-4">Memverifikasi Akun Anda...</h2>
+          <p class="text-secondary mt-2">Harap tunggu sebentar, kami sedang menyelaraskan akun Anda dengan sistem pencatatan domain.</p>
+        </div>
+
+        <!-- 2. SUCCESS STATE (Hidden by default) -->
+        <div id="state-success" class="state-wrapper hidden">
+          <div class="status-icon success-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <h2 class="mt-4">Verifikasi Email Berhasil!</h2>
+          <p class="text-secondary mt-2">Akun Anda telah diaktifkan sepenuhnya dan telah berhasil disinkronisasikan ke sistem registrar domain.</p>
+          <a href="/login" class="btn btn-primary btn-block mt-4">Masuk ke Portal</a>
+        </div>
+
+        <!-- 3. ERROR STATE (Hidden by default) -->
+        <div id="state-error" class="state-wrapper hidden">
+          <div class="status-icon error-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </div>
+          <h2 class="mt-4">Verifikasi Email Gagal</h2>
+          <p id="error-message" class="text-secondary mt-2">Tautan verifikasi salah, kedaluwarsa, atau sudah pernah digunakan.</p>
+          <div class="flex gap-2 justify-center mt-4">
+            <a href="/register" class="btn btn-primary">Daftar Kembali</a>
+            <a href="/login" class="btn btn-secondary">Masuk</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <script>
+    import { apiFetch } from '../utils/api';
+
+    const loadingState = document.getElementById('state-loading') as HTMLDivElement;
+    const successState = document.getElementById('state-success') as HTMLDivElement;
+    const errorState = document.getElementById('state-error') as HTMLDivElement;
+    const errorMsgElement = document.getElementById('error-message') as HTMLParagraphElement;
+
+    async function verifyToken() {
+      if (typeof window === 'undefined') return;
+
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get('token');
+
+      if (!token) {
+        showError('Token verifikasi tidak ditemukan pada tautan Anda.');
+        return;
+      }
+
+      try {
+        await apiFetch('/api/auth/verify-email', {
+          method: 'POST',
+          requireAuth: false,
+          body: JSON.stringify({ token }),
+        });
+
+        // Toggle to success state
+        loadingState.classList.add('hidden');
+        successState.classList.remove('hidden');
+      } catch (err: any) {
+        console.error('Email verification failed:', err);
+        showError(err.message || 'Verifikasi gagal. Tautan Anda kemungkinan besar kedaluwarsa atau sudah terpakai.');
+      }
+    }
+
+    function showError(message: string) {
+      errorMsgElement.innerText = message;
+      loadingState.classList.add('hidden');
+      errorState.classList.remove('hidden');
+    }
+
+    // Run verification automatically on mount
+    verifyToken();
+  </script>
+
+  <style>
+    .verify-section {
+      background-color: var(--bg-primary);
+      min-height: calc(100vh - 73px - 100px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .verify-container {
+      max-width: 550px;
+    }
+
+    .verify-card {
+      padding: 4rem 3rem !important;
+    }
+
+    .state-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Spinner Animation */
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid var(--border-color);
+      border-top-color: var(--accent-primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Success / Error Icons */
+    .status-icon {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid transparent;
+      line-height: 1;
+    }
+
+    .success-icon {
+      background-color: var(--success-bg);
+      color: var(--success);
+      border-color: var(--success);
+    }
+
+    .error-icon {
+      background-color: var(--error-bg);
+      color: var(--error);
+      border-color: var(--error);
+    }
+
+    .btn-block {
+      width: 100%;
+      height: 3rem;
+      font-size: 1.05rem;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</Layout>

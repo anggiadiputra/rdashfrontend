@@ -1,0 +1,9 @@
+---
+// Redirect /domains/register to /checkout
+---
+<script is:inline>
+  const params = new URLSearchParams(window.location.search);
+  const domain = params.get('domain');
+  const target = domain ? `/checkout?domain=${encodeURIComponent(domain)}` : '/';
+  window.location.replace(target);
+</script>

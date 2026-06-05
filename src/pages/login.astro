@@ -1,0 +1,294 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Masuk ke Portal">
+  <section class="auth-section section">
+    <div class="container auth-container">
+      <div class="card auth-card">
+        
+        <!-- Header -->
+        <div class="auth-header text-center mb-4">
+          <h2>Masuk ke Ruangtunggu</h2>
+          <p class="text-secondary mt-1">Gunakan kredensial akun Anda untuk mengakses dashboard.</p>
+        </div>
+
+        <!-- Alert Notification Box -->
+        <div id="alert-box" class="alert hidden"></div>
+
+        <!-- ==================== STEP 1: PASSWORD LOGIN ==================== -->
+        <form id="login-step1-form" class="auth-form">
+          <div class="form-group">
+            <label class="form-label" for="email">Alamat Email</label>
+            <input type="email" id="email" class="form-control" placeholder="nama@email.com" required autocomplete="email" />
+          </div>
+
+  <div class="form-group">
+            <label class="form-label" for="password">Kata Sandi</label>
+            <input type="password" id="password" class="form-control" placeholder="••••••••" required autocomplete="current-password" />
+            <div style="text-align: right; margin-top: 0.5rem;">
+              <a href="/forgot-password" style="font-size: 0.85rem; color: var(--text-secondary); text-decoration: none;">Lupa Password?</a>
+            </div>
+          </div>
+
+          <button type="submit" id="step1-submit-btn" class="btn btn-primary btn-block mt-4">
+            Lanjutkan ke Verifikasi
+          </button>
+        </form>
+
+        <!-- ==================== STEP 2: OTP VERIFICATION ==================== -->
+        <form id="login-step2-form" class="auth-form hidden">
+          <div class="otp-instruction text-center mb-4">
+            <div class="otp-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mail text-accent-primary"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+            </div>
+            <h3 class="mt-2">Masukkan Kode OTP</h3>
+            <p class="text-secondary mt-1">Kami baru saja mengirimkan 6 digit kode keamanan OTP ke email Anda <strong id="target-email" class="text-highlight"></strong>. Kode ini berlaku selama 5 menit.</p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label text-center" for="otp-code">Kode OTP (6 Digit)</label>
+            <input
+              type="text"
+              id="otp-code"
+              class="form-control otp-input"
+              placeholder="0 0 0 0 0 0"
+              required
+              pattern="[0-9]{6}"
+              title="Masukkan 6 digit angka tanpa spasi"
+              inputmode="numeric"
+              autocomplete="one-time-code"
+            />
+          </div>
+
+          <button type="submit" id="step2-submit-btn" class="btn btn-primary btn-block mt-4">
+            Verifikasi & Masuk
+          </button>
+
+          <div class="text-center mt-4">
+            <button type="button" id="back-to-step1" class="btn btn-outline btn-sm">Ganti Akun</button>
+          </div>
+        </form>
+
+        <!-- Footer Link -->
+        <div id="auth-footer-link" class="auth-footer text-center mt-4">
+          <p class="text-secondary">Belum memiliki akun? <a href="/register">Daftar secara gratis</a></p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <script>
+    import { apiFetch } from '../utils/api';
+    import { requireGuest } from '../utils/auth';
+
+    // 1. Guard page: unauthenticated users only
+    requireGuest();
+
+    const step1Form = document.getElementById('login-step1-form') as HTMLFormElement;
+    const step2Form = document.getElementById('login-step2-form') as HTMLFormElement;
+    const step1Btn = document.getElementById('step1-submit-btn') as HTMLButtonElement;
+    const step2Btn = document.getElementById('step2-submit-btn') as HTMLButtonElement;
+    const alertBox = document.getElementById('alert-box') as HTMLDivElement;
+    const targetEmailLabel = document.getElementById('target-email') as HTMLSpanElement;
+    const backBtn = document.getElementById('back-to-step1') as HTMLButtonElement;
+    const footerLink = document.getElementById('auth-footer-link') as HTMLDivElement;
+
+    let userEmail = '';
+
+    // Auto-clean non-digits (like spaces/letters) from OTP input in real-time
+    const otpInput = document.getElementById('otp-code') as HTMLInputElement;
+    otpInput?.addEventListener('input', () => {
+      let val = otpInput.value.replace(/\D/g, '');
+      if (val.length > 6) {
+        val = val.substring(0, 6);
+      }
+      otpInput.value = val;
+    });
+
+    // Check for expired session query param
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('expired') === 'true') {
+        showAlert('Sesi Anda telah kedaluwarsa atau tidak valid. Silakan masuk kembali.', 'warning');
+      }
+    }
+
+    // 2. STEP 1: PASSWORD FORM SUBMIT
+    step1Form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+
+
+      const email = (document.getElementById('email') as HTMLInputElement).value.replace(/\s+/g, '');
+      const password = (document.getElementById('password') as HTMLInputElement).value.trim();
+
+      step1Btn.disabled = true;
+      step1Btn.innerText = 'Memverifikasi...';
+      hideAlert();
+
+      try {
+        const response = await apiFetch('/api/auth/login-step1', {
+          method: 'POST',
+          requireAuth: false,
+          body: JSON.stringify({ email, password }),
+        });
+
+        // OTP sent successfully! Transition to Step 2
+        userEmail = email;
+        targetEmailLabel.innerText = email;
+        
+        step1Form.classList.add('hidden');
+        footerLink.classList.add('hidden');
+        step2Form.classList.remove('hidden');
+
+        showAlert(response.message || 'Kode OTP telah dikirimkan ke email Anda.', 'success');
+      } catch (err: any) {
+        console.error('Login Step 1 failed:', err);
+        showAlert(err.message || 'Login gagal. Email atau password salah.', 'error');
+
+
+      } finally {
+        step1Btn.disabled = false;
+        step1Btn.innerText = 'Lanjutkan ke Verifikasi';
+      }
+    });
+
+    // 3. STEP 2: OTP FORM SUBMIT
+    step2Form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const otpCode = (document.getElementById('otp-code') as HTMLInputElement).value.trim();
+      if (!otpCode || otpCode.length !== 6) {
+        showAlert('Kode OTP harus berupa 6 digit angka.', 'error');
+        return;
+      }
+
+      step2Btn.disabled = true;
+      step2Btn.innerText = 'Memasuki Portal...';
+      hideAlert();
+
+      try {
+        const response = await apiFetch('/api/auth/login-step2', {
+          method: 'POST',
+          requireAuth: false,
+          body: JSON.stringify({ email: userEmail, otp_code: otpCode }),
+        });
+
+        // Auth Successful! Store details
+        localStorage.setItem('token', response.token);
+        localStorage.setItem('user', JSON.stringify(response.user));
+
+        showAlert('Autentikasi Berhasil! Mengarahkan Anda ke dashboard...', 'success');
+        
+        // Wait a small moment to let user read the success alert
+        setTimeout(() => {
+          // Check if there is a redirection parameter
+          const params = new URLSearchParams(window.location.search);
+          const nextRoute = params.get('next');
+          window.location.href = nextRoute ? decodeURIComponent(nextRoute) : '/dashboard';
+        }, 800);
+
+      } catch (err: any) {
+        console.error('Login Step 2 failed:', err);
+        showAlert(err.message || 'Verifikasi OTP gagal. Silakan periksa kembali kode Anda.', 'error');
+      } finally {
+        step2Btn.disabled = false;
+        step2Btn.innerText = 'Verifikasi & Masuk';
+      }
+    });
+
+    // 4. BACK ACTION: GANTI AKUN
+    backBtn?.addEventListener('click', () => {
+      // Invalidate current state
+      userEmail = '';
+      hideAlert();
+      
+      // Reset forms
+      step2Form.classList.add('hidden');
+      step1Form.classList.remove('hidden');
+      footerLink.classList.remove('hidden');
+
+
+    });
+
+    function showAlert(message: string, type: 'success' | 'error' | 'warning') {
+      alertBox.className = `alert alert-${type}`;
+      alertBox.innerText = message;
+    }
+
+    function hideAlert() {
+      alertBox.className = 'alert hidden';
+    }
+  </script>
+
+  <style>
+    .auth-section {
+      background-color: var(--bg-primary);
+      min-height: calc(100vh - 73px - 100px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .auth-container {
+      width: 100%;
+      max-width: 480px;
+      padding: 0 1.25rem;
+    }
+
+    .auth-card {
+      padding: 2.25rem 1.5rem !important;
+    }
+
+    @media (min-width: 576px) {
+      .auth-card {
+        padding: 3rem 2.25rem !important;
+      }
+    }
+
+    .btn-block {
+      width: 100%;
+      height: 3rem;
+      font-size: 1.05rem;
+    }
+
+    /* OTP Instruction */
+    .otp-icon {
+      color: var(--accent-primary);
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .otp-instruction h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    .text-highlight {
+      color: var(--text-primary);
+      text-decoration: underline;
+    }
+
+    .otp-input {
+      text-align: center;
+      font-size: 1.5rem !important;
+      font-weight: 700;
+      letter-spacing: 0.5rem;
+      height: 3.5rem;
+    }
+
+    .btn-sm {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.8rem;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</Layout>

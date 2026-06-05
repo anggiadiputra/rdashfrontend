@@ -1,0 +1,1119 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Checkout Domain">
+  <div class="container" style="padding: 40px 1.5rem; min-height: 80vh;">
+    
+    <!-- State 1: Search Box (If no domain query is present) -->
+    <div id="no-domain-state" class="hidden">
+      <div style="margin-bottom: 32px; text-align: center;">
+        <h1 class="page-title" style="font-size: 26px; font-weight: 800; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+          <svg class="lucide lucide-shopping-cart" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-primary);"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+          Memulai Pemesanan Domain Baru
+        </h1>
+        <p class="page-subtitle" style="font-size: 14.5px; color: var(--text-secondary); max-width: 600px; margin: 0 auto;">
+          Ketik nama domain pilihan Anda untuk mengecek ketersediaan dan melanjutkan ke proses checkout.
+        </p>
+      </div>
+
+      <div class="card" style="max-width: 700px; margin: 0 auto 40px; padding: 28px !important;">
+        <form id="search-form">
+          <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+            <div style="position: relative; flex: 1; min-width: 250px;">
+              <svg class="lucide lucide-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 15px; height: 15px; position: absolute; left: 14px; top: 14px; color: var(--text-secondary); pointer-events: none;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="domain-search-input" class="form-control" placeholder="Ketik nama domain (misal: bisnissaya)..." required style="padding-left: 42px; height: 44px; font-size: 13.5px;" />
+            </div>
+            <button type="submit" id="search-btn" class="btn btn-primary" style="height: 44px; font-weight: 600; padding: 0 24px;">
+              Cari Ketersediaan
+            </button>
+          </div>
+        </form>
+
+        <div id="results-card" class="hidden" style="margin-top: 24px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
+            <h4 style="font-size: 13.5px; font-weight: 700; margin: 0;">Hasil Ketersediaan: <span id="search-query-text" style="color: var(--accent-primary); font-family: monospace;"></span></h4>
+            <input type="text" id="results-filter-input" class="form-control-compact" placeholder="Saring ekstensi..." style="height: 30px; font-size: 12px; width: 160px; border-radius: 6px;" />
+          </div>
+          
+          <div id="search-results-list" class="scroll-styled" style="display: flex; flex-direction: column; gap: 6px; max-height: 350px; overflow-y: auto; padding-right: 4px;">
+            <!-- Loaded dynamically -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- State 2: Checkout Details (If domain query parameter is present) -->
+    <div id="has-domain-state" class="hidden">
+      <div style="margin-bottom: 28px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px;">
+        <h1 class="page-title" style="font-size: 22px; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 8px;">
+          <svg class="lucide lucide-shopping-bag" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-primary);"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          Checkout Pendaftaran Domain
+        </h1>
+        <p class="page-subtitle" style="font-size: 13.5px; color: var(--text-secondary); margin-top: 4px;">
+          Lengkapi verifikasi identitas atau konfigurasi nameserver Anda untuk melanjutkan pembayaran.
+        </p>
+      </div>
+
+      <!-- Alert Notification Box -->
+      <div id="alert-box" class="alert hidden" style="border-radius: 8px; font-size: 13px;"></div>
+
+      <div class="checkout-grid">
+        
+        <!-- LEFT COLUMN: Forms -->
+        <div>
+          
+          <!-- FLOW A: Guest Flow (Unauthenticated) -->
+          <div id="guest-flow-container" class="hidden">
+            <div class="card" style="padding: 0 !important; overflow: hidden; border-radius: 12px;">
+              
+              <!-- Tab Header -->
+              <div style="display: flex; border-bottom: 1px solid var(--border-color); background: var(--bg-secondary);">
+                <button id="tab-register-btn" class="tab-btn active">Daftar Akun Baru</button>
+                <button id="tab-login-btn" class="tab-btn">Masuk ke Akun</button>
+              </div>
+
+              <!-- Tab Contents wrapper -->
+              <div style="padding: 28px;">
+                
+                <!-- Tab 1: Registration Form -->
+                <div id="register-tab-content">
+                  <form id="guest-register-form">
+                    <div class="form-section-title" style="margin-top: 0;">Informasi Akun Lokal</div>
+                    <div class="form-grid">
+                      <div class="form-group">
+                        <label class="form-label" for="reg-name">Nama Lengkap *</label>
+                        <input type="text" id="reg-name" class="form-control" placeholder="Nama Anda" required style="height: 38px; font-size: 12.5px;" />
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label" for="reg-email">Alamat Email *</label>
+                        <input type="email" id="reg-email" class="form-control" placeholder="nama@email.com" required style="height: 38px; font-size: 12.5px;" />
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label" for="reg-password">Kata Sandi (Min. 6 Karakter) *</label>
+                      <input type="password" id="reg-password" class="form-control" placeholder="••••••••" required minlength="6" style="height: 38px; font-size: 12.5px;" />
+                    </div>
+
+                    <div class="form-section-title mt-4">Informasi Profil Domain (Registrar)</div>
+                    <div class="form-grid">
+                      <div class="form-group">
+                        <label class="form-label" for="reg-organization">Nama Organisasi / Perusahaan *</label>
+                        <input type="text" id="reg-organization" class="form-control" placeholder="PT / Personal" required style="height: 38px; font-size: 12.5px;" />
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label" for="reg-voice">Nomor Telepon *</label>
+                        <input type="tel" id="reg-voice" class="form-control" placeholder="+62812345678" required style="height: 38px; font-size: 12.5px;" />
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label" for="reg-street-1">Alamat Lengkap *</label>
+                      <input type="text" id="reg-street-1" class="form-control" placeholder="Nama jalan, nomor rumah" required style="height: 38px; font-size: 12.5px;" />
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label" for="reg-street-2">Alamat (Baris 2 - Opsional)</label>
+                      <input type="text" id="reg-street-2" class="form-control" placeholder="Nomor unit/gedung" style="height: 38px; font-size: 12.5px;" />
+                    </div>
+
+                    <div class="form-grid">
+                      <div class="form-group">
+                        <label class="form-label" for="reg-state">Provinsi *</label>
+                        <select id="reg-state" class="form-control" required style="height: 38px; font-size: 12.5px; padding: 0 1rem;">
+                          <option value="">Pilih Provinsi</option>
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label" for="reg-city">Kabupaten / Kota *</label>
+                        <select id="reg-city" class="form-control" required disabled style="height: 38px; font-size: 12.5px; padding: 0 1rem;">
+                          <option value="">Pilih Kabupaten/Kota</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div class="form-grid">
+                      <div class="form-group">
+                        <label class="form-label" for="reg-district">Kecamatan *</label>
+                        <select id="reg-district" class="form-control" required disabled style="height: 38px; font-size: 12.5px; padding: 0 1rem;">
+                          <option value="">Pilih Kecamatan</option>
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label" for="reg-village">Kelurahan *</label>
+                        <select id="reg-village" class="form-control" required disabled style="height: 38px; font-size: 12.5px; padding: 0 1rem;">
+                          <option value="">Pilih Kelurahan</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div class="form-grid" style="margin-bottom: 20px;">
+                      <div class="form-group">
+                        <label class="form-label" for="reg-postal">Kode Pos *</label>
+                        <input type="text" id="reg-postal" class="form-control" placeholder="Kode Pos" required style="height: 38px; font-size: 12.5px;" />
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label" for="reg-country">Kode Negara (2 Karakter) *</label>
+                        <input type="text" id="reg-country" class="form-control" placeholder="ID" required maxlength="2" style="height: 38px; font-size: 12.5px;" />
+                      </div>
+                    </div>
+
+                    <button type="submit" id="guest-register-submit-btn" class="btn btn-primary" style="width: 100%; height: 42px; font-weight: 700; border-radius: 8px;">
+                      Daftar Akun & Simpan Transaksi
+                    </button>
+                  </form>
+                </div>
+
+                <!-- Tab 2: Login Form (with OTP step inline) -->
+                <div id="login-tab-content" class="hidden">
+                  
+                  <!-- Login Step 1 Form -->
+                  <form id="guest-login-step1-form">
+                    <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 20px;">Silakan masuk ke akun Ruangtunggu Anda untuk memproses domain ini.</p>
+                    
+                    <div class="form-group">
+                      <label class="form-label" for="login-email">Alamat Email</label>
+                      <input type="email" id="login-email" class="form-control" placeholder="nama@email.com" required style="height: 40px; font-size: 13px;" />
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 24px;">
+                      <label class="form-label" for="login-password">Kata Sandi</label>
+                      <input type="password" id="login-password" class="form-control" placeholder="••••••••" required style="height: 40px; font-size: 13px;" />
+                    </div>
+
+                    <button type="submit" id="guest-login-step1-btn" class="btn btn-primary" style="width: 100%; height: 42px; font-weight: 700; border-radius: 8px;">
+                      Lanjutkan ke Verifikasi OTP
+                    </button>
+                  </form>
+
+                  <!-- Login Step 2 Form (OTP Code input) -->
+                  <form id="guest-login-step2-form" class="hidden">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                      <span style="font-size: 28px;">✉️</span>
+                      <h3 style="font-size: 15px; font-weight: 700; margin: 8px 0 4px;">Masukkan Kode OTP</h3>
+                      <p style="font-size: 11.5px; color: var(--text-secondary); line-height: 1.5;">Kami telah mengirimkan 6 digit OTP keamanan ke email Anda <strong id="target-email" style="color: var(--text-primary); text-decoration: underline;"></strong>. Kode berlaku selama 5 menit.</p>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 20px;">
+                      <input
+                        type="text"
+                        id="login-otp-code"
+                        class="form-control text-center"
+                        placeholder="0 0 0 0 0 0"
+                        required
+                        pattern="[0-9]{6}"
+                        maxlength="6"
+                        style="font-size: 1.35rem; font-weight: 700; letter-spacing: 0.3rem; height: 46px; border-radius: 8px;"
+                        inputmode="numeric"
+                      />
+                    </div>
+
+                    <button type="submit" id="guest-login-step2-btn" class="btn btn-primary" style="width: 100%; height: 42px; font-weight: 700; border-radius: 8px;">
+                      Verifikasi & Masuk
+                    </button>
+
+                    <div style="text-align: center; margin-top: 16px;">
+                      <button type="button" id="back-to-login-step1" class="btn btn-outline" style="height: 30px; font-size: 11px; padding: 0 12px; border-radius: 6px;">Ganti Email</button>
+                    </div>
+                  </form>
+
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+
+          <!-- FLOW B: Authenticated Flow (Logged-in) -->
+          <div id="auth-flow-container" class="hidden">
+            <div class="card" style="padding: 24px !important; border-radius: 12px; border: 1px solid var(--border-color);">
+              <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 20px; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+                <svg class="lucide lucide-edit-3" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-primary);"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                Konfigurasi Pendaftaran Domain
+              </h3>
+
+              <form id="auth-checkout-form">
+                <div style="display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 24px;">
+                  
+                  <!-- Registration Years -->
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label" style="font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">Durasi Registrasi</label>
+                    <select id="auth-register-years" class="form-control" style="height: 44px; font-size: 13.5px; border-radius: 8px;">
+                      <option value="1">1 Tahun</option>
+                      <option value="2">2 Tahun</option>
+                      <option value="3">3 Tahun</option>
+                      <option value="4">4 Tahun</option>
+                      <option value="5">5 Tahun</option>
+                      <option value="6">6 Tahun</option>
+                      <option value="7">7 Tahun</option>
+                      <option value="8">8 Tahun</option>
+                      <option value="9">9 Tahun</option>
+                      <option value="10">10 Tahun</option>
+                    </select>
+                  </div>
+
+                  <!-- Nameservers list -->
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label" style="font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">Nameservers Kustom (Opsional)</label>
+                    <p style="font-size: 11px; color: var(--text-secondary); margin-bottom: 8px; line-height: 1.4;">
+                      Biarkan kosong untuk menggunakan Nameserver default yang telah Anda tentukan di dashboard reseller rdash.id secara otomatis.
+                    </p>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                      <input type="text" id="ns-1" class="form-control" placeholder="ns1.nameserverkustom.com" value="" style="height: 38px; font-size: 12.5px;" />
+                      <input type="text" id="ns-2" class="form-control" placeholder="ns2.nameserverkustom.com" value="" style="height: 38px; font-size: 12.5px;" />
+                    </div>
+                  </div>
+
+                </div>
+              </form>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN: Transaction Details Sidebar -->
+        <div class="transaction-details-column">
+          <div class="card sidebar-sticky-card">
+            <h3 style="font-size: 14.5px; font-weight: 700; margin-bottom: 18px; color: var(--text-primary); border-bottom: 1px dashed var(--border-color); padding-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+              <svg class="lucide lucide-shopping-cart" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-primary);"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+              Rincian Transaksi Domain
+            </h3>
+            
+            <div style="margin-bottom: 18px;">
+              <span style="font-size: 10.5px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; display: block; margin-bottom: 2px;">Domain Pilihan:</span>
+              <strong id="sidebar-domain-name" style="font-family: monospace; font-size: 14px; color: var(--accent-primary); background: var(--bg-tertiary); padding: 3px 8px; border-radius: 4px; border: 1px solid var(--border-color); display: inline-block;">-</strong>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 12px; font-size: 13px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; margin-bottom: 16px;">
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-secondary);">Harga Registrasi (<span id="calc-years-display">1 thn</span>):</span>
+                <span id="sidebar-price-base" style="font-weight: 600; color: var(--text-primary);">Rp 0</span>
+              </div>
+              
+              <div id="sidebar-promo-row" class="hidden" style="display: flex; justify-content: space-between;">
+                <span style="color: #ef4444; font-weight: 600;">Diskon Promo:</span>
+                <span id="sidebar-price-saving" style="font-weight: 600; color: #ef4444;">-Rp 0</span>
+              </div>
+
+              <div id="sidebar-tax-row" style="display: flex; justify-content: space-between;">
+                <span id="sidebar-tax-label" style="color: var(--text-secondary);">PPN / Pajak (11%):</span>
+                <span id="sidebar-price-tax" style="font-weight: 600; color: var(--text-primary);">Rp 0</span>
+              </div>
+
+
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-secondary);">Biaya Gerbang / Admin:</span>
+                <span id="sidebar-price-admin" style="font-weight: 600; color: var(--text-primary);">Rp 2.500</span>
+              </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+              <span style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Total Bayar (Estimasi):</span>
+              <strong id="sidebar-price-total" style="font-size: 18px; font-weight: 800; color: var(--accent-primary);">Rp 0</strong>
+            </div>
+
+            <!-- Action Button inside Sidebar -->
+            <button type="button" id="checkout-action-btn" class="btn btn-primary" style="width: 100%; height: 44px; font-weight: 700; font-size: 13.5px; border-radius: 8px; justify-content: center; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);" disabled>
+              Daftar / Masuk Terlebih Dahulu
+            </button>
+
+            <!-- Bottom Disclaimer Alert -->
+            <div id="disclaimer-alert" class="alert alert-warning" style="font-size: 11px; line-height: 1.4; padding: 10px 12px; border-radius: 6px; margin-top: 14px; margin-bottom: 0;">
+              Lengkapi pendaftaran akun baru Anda atau lakukan login di samping terlebih dahulu untuk melanjutkan proses pendaftaran domain ini.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</Layout>
+
+<script>
+  import { apiFetch } from '../utils/api';
+  import { isAuthenticated } from '../utils/auth';
+  import { initRegionDropdowns } from '../utils/region';
+
+  // ── 1. ROUTING & STATE DETERMINATION ──
+  let domainParam = '';
+  if (typeof window !== 'undefined') {
+    const params = new URLSearchParams(window.location.search);
+    domainParam = params.get('domain') || '';
+  }
+
+  const noDomainState = document.getElementById('no-domain-state');
+  const hasDomainState = document.getElementById('has-domain-state');
+
+  // DOM Elements
+  const alertBox = document.getElementById('alert-box') as HTMLDivElement;
+  const sidebarDomainName = document.getElementById('sidebar-domain-name');
+  const calcYearsDisplay = document.getElementById('calc-years-display');
+  const sidebarPriceBase = document.getElementById('sidebar-price-base');
+  const sidebarPromoRow = document.getElementById('sidebar-promo-row');
+  const sidebarPriceSaving = document.getElementById('sidebar-price-saving');
+  const sidebarPriceTax = document.getElementById('sidebar-price-tax');
+  const sidebarPriceTotal = document.getElementById('sidebar-price-total');
+  
+  const guestContainer = document.getElementById('guest-flow-container');
+  const authContainer = document.getElementById('auth-flow-container');
+  const checkoutActionBtn = document.getElementById('checkout-action-btn') as HTMLButtonElement;
+  const disclaimerAlert = document.getElementById('disclaimer-alert');
+
+  let pricesCache: any[] = [];
+  let pricingObj: any = null;
+  let isPremiumDomain = false;
+  let premiumRetailPrice = 0;
+  let premiumCostPrice = 0;
+
+  // System Settings State
+  let systemSettings: any = {
+    tax_enabled: true,
+    tax_rate: 11
+  };
+
+  async function loadSystemSettings() {
+    try {
+      const res = await apiFetch('/api/settings', { requireAuth: false });
+      if (res && res.success && res.data) {
+        systemSettings = res.data;
+      }
+    } catch (e) {
+      console.warn('Failed to load settings in checkout.astro, using defaults:', e);
+    }
+  }
+
+  async function initPage() {
+    await loadSystemSettings();
+    if (!domainParam) {
+      noDomainState?.classList.remove('hidden');
+      initSearchFlow();
+    } else {
+      hasDomainState?.classList.remove('hidden');
+      await initCheckoutFlow();
+    }
+  }
+
+
+  // ── 2. STATE 1: SEARCH FLOW LOGIC ──
+  function initSearchFlow() {
+    const searchForm = document.getElementById('search-form') as HTMLFormElement;
+    const searchInput = document.getElementById('domain-search-input') as HTMLInputElement;
+    const searchBtn = document.getElementById('search-btn') as HTMLButtonElement;
+    const resultsCard = document.getElementById('results-card') as HTMLDivElement;
+    const searchQueryText = document.getElementById('search-query-text') as HTMLSpanElement;
+    const searchResultsList = document.getElementById('search-results-list') as HTMLDivElement;
+    const resultsFilterInput = document.getElementById('results-filter-input') as HTMLInputElement;
+
+    // Load prices for fallback on search TLD list
+    let searchExtensions: string[] = ['.com', '.net', '.org', '.id', '.co.id', '.web.id', '.my.id', '.xyz'];
+    
+    async function loadSearchPrices() {
+      try {
+        const response = await apiFetch('/api/domains/prices', { requireAuth: false });
+        if (response.success && response.data) {
+          pricesCache = response.data;
+          searchExtensions = response.data.map((p: any) => p.extension);
+        }
+      } catch (err) {
+        console.warn('Failed to load prices for search fallback:', err);
+      }
+    }
+    loadSearchPrices();
+
+    searchForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (resultsFilterInput) resultsFilterInput.value = '';
+
+      const query = searchInput.value.trim().toLowerCase();
+      if (!query) return;
+
+      const cleanName = query.split('.')[0];
+      if (cleanName.length < 3) {
+        alert('Nama domain minimal terdiri dari 3 karakter.');
+        return;
+      }
+
+      searchBtn.disabled = true;
+      searchBtn.innerText = 'Mengecek...';
+      resultsCard.classList.add('hidden');
+
+      try {
+        searchQueryText.innerText = cleanName;
+        searchResultsList.innerHTML = '';
+        resultsCard.classList.remove('hidden');
+
+        // Render skeleton loaders
+        searchExtensions.forEach(ext => {
+          const skeleton = document.createElement('div');
+          skeleton.style.cssText = 'display:flex; align-items:center; justify-content:space-between; padding:8px 16px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-secondary); min-height:46px;';
+          skeleton.innerHTML = `
+            <div style="height:12px; border-radius:4px; background:var(--border-color); width:120px; animation: pulse 1.5s infinite;"></div>
+            <div style="height:26px; width:70px; border-radius:4px; background:var(--border-color); animation: pulse 1.5s infinite;"></div>
+          `;
+          searchResultsList.appendChild(skeleton);
+        });
+
+        // Call availability API
+        const tlds = searchExtensions.join(',');
+        const response = await apiFetch(`/api/domains/availability?domainName=${encodeURIComponent(cleanName)}&extensions=${encodeURIComponent(tlds)}`, { requireAuth: false });
+        
+        searchResultsList.innerHTML = '';
+
+        if (response.success && response.data) {
+          // Sort results so exact match comes first
+          const sorted = [...response.data].sort((a, b) => {
+            const aIsExact = a.domain.toLowerCase() === query.toLowerCase();
+            const bIsExact = b.domain.toLowerCase() === query.toLowerCase();
+            if (aIsExact && !bIsExact) return -1;
+            if (!aIsExact && bIsExact) return 1;
+            return 0;
+          });
+
+          sorted.forEach((item: any) => {
+            const isExact = item.domain.toLowerCase() === query.toLowerCase();
+            renderSearchRow(item, isExact);
+          });
+        }
+      } catch (err) {
+        console.error('Availability check failed:', err);
+        searchResultsList.innerHTML = '<p style="font-size:12px; color:#ef4444; padding: 12px 0; text-align:center;">Gagal memuat ketersediaan domain. Silakan coba lagi.</p>';
+      } finally {
+        searchBtn.disabled = false;
+        searchBtn.innerText = 'Cari Ketersediaan';
+      }
+    });
+
+    function renderSearchRow(item: any, isExact: boolean) {
+      const domain = item.domain;
+      const isAvailable = item.status === 'available';
+      const isPremium = !!item.is_premium;
+
+      const row = document.createElement('div');
+      row.setAttribute('data-domain-row', domain.toLowerCase());
+      row.style.cssText = `display:flex; align-items:center; justify-content:space-between; padding:8px 16px; border:1px solid ${isExact ? 'var(--accent-primary)' : 'var(--border-color)'}; border-radius:8px; background: ${isExact ? 'var(--accent-light)' : 'var(--bg-secondary)'}; min-height:46px; font-size: 13px; gap: 8px;`;
+
+      const firstDot = domain.indexOf('.');
+      const ext = firstDot !== -1 ? domain.substring(firstDot) : '';
+      const pricing = pricesCache.find(p => p.extension === ext);
+      
+      let priceHtml = '';
+      if (isPremium && item.premium_price > 0) {
+        priceHtml = `<span style="color:#facc15; font-weight:700;">Rp ${item.premium_price.toLocaleString('id-ID')}</span>`;
+      } else if (pricing) {
+        if (pricing.promo && pricing.regularRegisterPrice > pricing.registerPrice) {
+          priceHtml = `<span style="text-decoration:line-through; color:var(--text-muted); font-size:10.5px; margin-right:4px;">Rp ${pricing.regularRegisterPrice.toLocaleString('id-ID')}</span><span style="color:#ef4444; font-weight:700;">Rp ${pricing.registerPrice.toLocaleString('id-ID')}</span>`;
+        } else {
+          priceHtml = `Rp ${pricing.registerPrice.toLocaleString('id-ID')}`;
+        }
+      }
+
+      let badgeHtml = '';
+      if (isPremium) {
+        badgeHtml = `<span style="font-size:8.5px; background:rgba(234,179,8,0.2); color:#facc15; border:1px solid rgba(234,179,8,0.4); font-weight:800; text-transform:uppercase; padding:1.5px 5px; border-radius:3px; letter-spacing:0.5px;">PREMIUM</span>`;
+      } else if (pricing?.promo && pricing.regularRegisterPrice > pricing.registerPrice) {
+        badgeHtml = `<span style="font-size:8.5px; background:rgba(239,68,68,0.1); color:#ef4444; border:1px solid rgba(239,68,68,0.2); font-weight:800; text-transform:uppercase; padding:1.5px 5px; border-radius:3px; letter-spacing:0.5px;">PROMO</span>`;
+      }
+
+      row.innerHTML = `
+        <div style="display:flex; align-items:center; gap:8px;">
+          <strong style="font-family:monospace; font-size:13.5px;">${domain}</strong>
+          ${isExact ? '<span style="font-size:8.5px; background:var(--accent-primary); color:#fff; font-weight:800; text-transform:uppercase; padding:1.5px 5px; border-radius:3px; letter-spacing:0.5px;">Pilihan Anda</span>' : ''}
+          ${badgeHtml}
+        </div>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span style="font-weight:600; color: ${isAvailable ? '#16a34a' : 'var(--text-muted)'}; display:flex; align-items:center; gap:4px;">
+            ${isAvailable 
+              ? '<svg class="lucide lucide-check" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="color:#16a34a;"><polyline points="20 6 9 17 4 12"/></svg> Tersedia'
+              : 'Terdaftar'
+            }
+          </span>
+          ${priceHtml ? `<span style="font-size:12px; padding-left:8px; border-left:1px solid var(--border-color); color:var(--text-secondary);">${priceHtml}</span>` : ''}
+          ${isAvailable
+            ? `<a href="/checkout?domain=${encodeURIComponent(domain)}${isPremium ? '&is_premium=true' : ''}" class="btn btn-primary" style="height:28px; font-size:11px; padding: 0 12px; border-radius: 4px; line-height:1; display:inline-flex; align-items:center;">Daftarkan</a>`
+            : `<a href="/whois?domain=${encodeURIComponent(domain)}" target="_blank" class="btn btn-outline" style="height:28px; font-size:11px; padding: 0 12px; border-radius: 4px; line-height:1; display:inline-flex; align-items:center;">WHOIS</a>`
+          }
+        </div>
+      `;
+      searchResultsList.appendChild(row);
+    }
+
+    // Filter list rows in search state
+    resultsFilterInput?.addEventListener('input', () => {
+      const val = resultsFilterInput.value.trim().toLowerCase();
+      const rows = searchResultsList.querySelectorAll('[data-domain-row]');
+      rows.forEach(r => {
+        const dom = (r as HTMLElement).dataset.domainRow || '';
+        if (dom.includes(val)) {
+          (r as HTMLElement).style.display = 'flex';
+        } else {
+          (r as HTMLElement).style.display = 'none';
+        }
+      });
+    });
+  }
+
+  // ── 3. STATE 2: CHECKOUT FLOW LOGIC ──
+  async function initCheckoutFlow() {
+    if (sidebarDomainName) sidebarDomainName.textContent = domainParam.toLowerCase();
+
+    // Load reseller default nameservers dynamically (unconditional)
+    try {
+      const resellerRes = await apiFetch('/api/domains/reseller', { requireAuth: false });
+      const ns1Input = document.getElementById('ns-1') as HTMLInputElement;
+      const ns2Input = document.getElementById('ns-2') as HTMLInputElement;
+      if (resellerRes.success && resellerRes.data && resellerRes.data.nameservers) {
+        const ns = resellerRes.data.nameservers || [];
+        if (ns1Input && ns[0]) ns1Input.value = ns[0];
+        if (ns2Input && ns[1]) ns2Input.value = ns[1];
+      } else {
+        if (ns1Input) ns1Input.value = 'ns1.ruangtunggu.id';
+        if (ns2Input) ns2Input.value = 'ns2.ruangtunggu.id';
+      }
+    } catch (e) {
+      console.warn('Failed to load reseller profile for nameservers:', e);
+      const ns1Input = document.getElementById('ns-1') as HTMLInputElement;
+      const ns2Input = document.getElementById('ns-2') as HTMLInputElement;
+      if (ns1Input) ns1Input.value = 'ns1.ruangtunggu.id';
+      if (ns2Input) ns2Input.value = 'ns2.ruangtunggu.id';
+    }
+
+    // Determine logged in state
+    const loggedIn = isAuthenticated();
+
+    if (!loggedIn) {
+      guestContainer?.classList.remove('hidden');
+      initGuestForms();
+    } else {
+      authContainer?.classList.remove('hidden');
+      initAuthForm();
+    }
+
+    // Load pricing cache and calculate
+    try {
+      const res = await apiFetch('/api/domains/prices', { requireAuth: false });
+      if (res.success && res.data) {
+        pricesCache = res.data;
+      }
+    } catch (e) {
+      console.warn('Failed to load prices, fallback to mock estimates:', e);
+    }
+
+    // Check if domain is premium on load
+    try {
+      const cleanDomain = domainParam.toLowerCase();
+      const firstDot = cleanDomain.indexOf('.');
+      const domainNameOnly = firstDot !== -1 ? cleanDomain.substring(0, firstDot) : cleanDomain;
+      const domainExtOnly = firstDot !== -1 ? cleanDomain.substring(firstDot) : '';
+      
+      const checkRes = await apiFetch(`/api/domains/availability?domainName=${encodeURIComponent(domainNameOnly)}&extensions=${encodeURIComponent(domainExtOnly)}`, { requireAuth: false });
+      if (checkRes.success && checkRes.data && checkRes.data.length > 0) {
+        const item = checkRes.data[0];
+        if (item.is_premium) {
+          isPremiumDomain = true;
+          premiumRetailPrice = item.premium_price;
+          premiumCostPrice = item.premium_cost;
+          
+          showAlert('Domain ini adalah domain premium dengan harga khusus dari registry global.', 'warning');
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to check premium status during checkout init:', e);
+    }
+
+    calculateSidebarPrice(1); // default 1 year on load
+  }
+
+  // Calculate & update transaction sidebar
+  function calculateSidebarPrice(years: number) {
+    const cleanDomain = domainParam.toLowerCase();
+    const firstDot = cleanDomain.indexOf('.');
+    const ext = firstDot !== -1 ? cleanDomain.substring(firstDot) : '';
+
+    pricingObj = pricesCache.find(p => p.extension === ext);
+    if (!pricingObj) {
+      // Basic fallback prices
+      const fallbacks: Record<string, any> = {
+        '.com': { registerPrice: 145000, regularRegisterPrice: 145000, promo: false },
+        '.net': { registerPrice: 155000, regularRegisterPrice: 155000, promo: false },
+        '.id': { registerPrice: 220000, regularRegisterPrice: 220000, promo: false },
+        '.co.id': { registerPrice: 275000, regularRegisterPrice: 275000, promo: false },
+        '.web.id': { registerPrice: 75000, regularRegisterPrice: 85000, promo: true },
+        '.my.id': { registerPrice: 25000, regularRegisterPrice: 35000, promo: true },
+      };
+      pricingObj = fallbacks[ext] || { registerPrice: 145000, regularRegisterPrice: 145000, promo: false };
+    }
+
+    let registerPrice = 0;
+    let regularPrice = 0;
+
+    if (isPremiumDomain && premiumRetailPrice > 0) {
+      registerPrice = premiumRetailPrice * years;
+      regularPrice = premiumRetailPrice * years;
+      
+      if (calcYearsDisplay) calcYearsDisplay.textContent = `${years} thn`;
+      if (sidebarPriceBase) sidebarPriceBase.textContent = `Rp ${regularPrice.toLocaleString('id-ID')}`;
+      
+      if (sidebarPromoRow && sidebarPriceSaving) {
+        sidebarPromoRow.classList.remove('hidden');
+        const labelEl = sidebarPromoRow.querySelector('.text-secondary');
+        if (labelEl) labelEl.textContent = 'Status Nama';
+        sidebarPriceSaving.textContent = 'Premium';
+        sidebarPriceSaving.style.color = '#eab308'; // Amber/Gold color
+      }
+    } else {
+      if (pricingObj.registrationByYear) {
+        const yearPrice = pricingObj.registrationByYear[String(years)];
+        if (yearPrice) {
+          registerPrice = yearPrice;
+        } else {
+          registerPrice = pricingObj.registerPrice * years;
+        }
+
+        if (pricingObj.promo) {
+          if (pricingObj.regularRegistrationByYear) {
+            const regYearPrice = pricingObj.regularRegistrationByYear[String(years)];
+            if (regYearPrice) regularPrice = regYearPrice;
+          }
+          if (!regularPrice && pricingObj.regularRegisterPrice > 0) {
+            regularPrice = pricingObj.regularRegisterPrice * years;
+          }
+        } else {
+          regularPrice = registerPrice;
+        }
+      } else {
+        registerPrice = pricingObj.registerPrice * years;
+        regularPrice = (pricingObj.regularRegisterPrice || pricingObj.registerPrice) * years;
+      }
+
+      if (calcYearsDisplay) calcYearsDisplay.textContent = `${years} thn`;
+      if (sidebarPriceBase) sidebarPriceBase.textContent = `Rp ${regularPrice.toLocaleString('id-ID')}`;
+
+      const isPromo = pricingObj.promo && regularPrice > registerPrice;
+      if (isPromo) {
+        const saving = regularPrice - registerPrice;
+        if (sidebarPromoRow && sidebarPriceSaving) {
+          sidebarPromoRow.classList.remove('hidden');
+          const labelEl = sidebarPromoRow.querySelector('.text-secondary');
+          if (labelEl) labelEl.textContent = 'Hemat Promo';
+          sidebarPriceSaving.textContent = `-Rp ${saving.toLocaleString('id-ID')}`;
+          sidebarPriceSaving.style.color = '';
+        }
+      } else {
+        sidebarPromoRow?.classList.add('hidden');
+      }
+    }
+
+    const taxRatePercent = systemSettings.tax_enabled ? (systemSettings.tax_rate || 0) : 0;
+    const tax = Math.round(registerPrice * (taxRatePercent / 100));
+    const admin = 2500;
+    const grandTotal = registerPrice + tax + admin;
+
+    const sidebarTaxRow = document.getElementById('sidebar-tax-row');
+    const sidebarTaxLabel = document.getElementById('sidebar-tax-label');
+
+    if (systemSettings.tax_enabled) {
+      if (sidebarTaxRow) sidebarTaxRow.style.display = 'flex';
+      if (sidebarTaxLabel) sidebarTaxLabel.textContent = `PPN / Pajak (${taxRatePercent}%):`;
+      if (sidebarPriceTax) sidebarPriceTax.textContent = `Rp ${tax.toLocaleString('id-ID')}`;
+    } else {
+      if (sidebarTaxRow) sidebarTaxRow.style.display = 'none';
+      if (sidebarPriceTax) sidebarPriceTax.textContent = `Rp 0`;
+    }
+    if (sidebarPriceTotal) sidebarPriceTotal.textContent = `Rp ${grandTotal.toLocaleString('id-ID')}`;
+
+
+    // Store calculated totals globally on window to refer when submitting
+    (window as any)._checkoutCalculatedTotals = {
+      years,
+      price: registerPrice,
+      regularPrice: regularPrice,
+      isPromo: !isPremiumDomain && pricingObj.promo && regularPrice > registerPrice,
+      isPremium: isPremiumDomain
+    };
+  }
+
+  // ── 4. FLOW A: GUEST TABS AND CREDENTIALS ──
+  function initGuestForms() {
+    const tabRegisterBtn = document.getElementById('tab-register-btn');
+    const tabLoginBtn = document.getElementById('tab-login-btn');
+    const registerTabContent = document.getElementById('register-tab-content');
+    const loginTabContent = document.getElementById('login-tab-content');
+
+    // Switch Tabs
+    tabRegisterBtn?.addEventListener('click', () => {
+      tabRegisterBtn.classList.add('active');
+      tabLoginBtn?.classList.remove('active');
+      registerTabContent?.classList.remove('hidden');
+      loginTabContent?.classList.add('hidden');
+      hideAlert();
+    });
+
+    tabLoginBtn?.addEventListener('click', () => {
+      tabLoginBtn.classList.add('active');
+      tabRegisterBtn?.classList.remove('active');
+      loginTabContent?.classList.remove('hidden');
+      registerTabContent?.classList.add('hidden');
+      hideAlert();
+    });
+
+    // Initialize Indonesian administrative region dropdowns
+    const provinceSelect = document.getElementById('reg-state') as HTMLSelectElement;
+    const regencySelect = document.getElementById('reg-city') as HTMLSelectElement;
+    const districtSelect = document.getElementById('reg-district') as HTMLSelectElement;
+    const villageSelect = document.getElementById('reg-village') as HTMLSelectElement;
+
+    if (provinceSelect && regencySelect && districtSelect && villageSelect) {
+      initRegionDropdowns({
+        provinceSelect,
+        regencySelect,
+        districtSelect,
+        villageSelect
+      });
+    }
+
+    // ── A1. GUEST REGISTER SUBMIT ──
+    const guestRegisterForm = document.getElementById('guest-register-form') as HTMLFormElement;
+    const registerSubmitBtn = document.getElementById('guest-register-submit-btn') as HTMLButtonElement;
+
+    guestRegisterForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const name = (document.getElementById('reg-name') as HTMLInputElement).value.trim();
+      const email = (document.getElementById('reg-email') as HTMLInputElement).value.replace(/\s+/g, '');
+      const password = (document.getElementById('reg-password') as HTMLInputElement).value.trim();
+      const organization = (document.getElementById('reg-organization') as HTMLInputElement).value;
+      const voice = (document.getElementById('reg-voice') as HTMLInputElement).value;
+      const street_1 = (document.getElementById('reg-street-1') as HTMLInputElement).value;
+      
+      const originalStreet2 = (document.getElementById('reg-street-2') as HTMLInputElement).value.trim();
+      
+      // Extract option text content from select elements
+      const state = provinceSelect.options[provinceSelect.selectedIndex]?.textContent || '';
+      const city = regencySelect.options[regencySelect.selectedIndex]?.textContent || '';
+      const district = districtSelect.options[districtSelect.selectedIndex]?.textContent || '';
+      const village = villageSelect.options[villageSelect.selectedIndex]?.textContent || '';
+
+      // Construct a detailed address with district and sub-district information for domain registration
+      let street_2 = originalStreet2 || undefined;
+      if (district && village) {
+        const regionAddress = `Kec. ${district}, Kel. ${village}`;
+        street_2 = originalStreet2 ? `${originalStreet2}, ${regionAddress}` : regionAddress;
+      }
+
+      const postal_code = (document.getElementById('reg-postal') as HTMLInputElement).value;
+      const country_code = (document.getElementById('reg-country') as HTMLInputElement).value.toUpperCase();
+
+      registerSubmitBtn.disabled = true;
+      registerSubmitBtn.innerText = 'Memproses Pendaftaran...';
+      hideAlert();
+
+      try {
+        await apiFetch('/api/auth/register', {
+          method: 'POST',
+          requireAuth: false,
+          body: JSON.stringify({
+            name,
+            email,
+            password,
+            organization,
+            voice,
+            street_1,
+            street_2,
+            city,
+            state,
+            postal_code,
+            country_code,
+          }),
+        });
+
+        showAlert('Akun Anda berhasil didaftarkan! Silakan cek email masuk/spam Anda untuk memverifikasi akun Anda terlebih dahulu. Setelah terverifikasi, silakan masuk ke tab "Masuk ke Akun" di atas untuk melanjutkan pembelian.', 'success');
+        guestRegisterForm.reset();
+        
+        // Auto switch tab to login for UX convenience
+        setTimeout(() => {
+          tabLoginBtn?.dispatchEvent(new Event('click'));
+          // prefill email input
+          const loginEmail = document.getElementById('login-email') as HTMLInputElement;
+          if (loginEmail) loginEmail.value = email;
+        }, 3000);
+
+      } catch (err: any) {
+        console.error('Guest Register failed:', err);
+        let errorMsg = err.message || 'Pendaftaran gagal. Silakan coba lagi.';
+        if (err.errors) {
+          const errorFields = Object.entries(err.errors)
+            .map(([field, msgs]: any) => `${field}: ${msgs.join(', ')}`)
+            .join('; ');
+          errorMsg = `Validasi gagal: ${errorFields}`;
+        }
+        showAlert(errorMsg, 'error');
+      } finally {
+        registerSubmitBtn.disabled = false;
+        registerSubmitBtn.innerText = 'Daftar Akun & Simpan Transaksi';
+      }
+    });
+
+    // ── A2. GUEST LOGIN INLINE ──
+    const loginStep1Form = document.getElementById('guest-login-step1-form') as HTMLFormElement;
+    const loginStep2Form = document.getElementById('guest-login-step2-form') as HTMLFormElement;
+    const loginStep1Btn = document.getElementById('guest-login-step1-btn') as HTMLButtonElement;
+    const loginStep2Btn = document.getElementById('guest-login-step2-btn') as HTMLButtonElement;
+    const targetEmailLabel = document.getElementById('target-email') as HTMLSpanElement;
+    const backToStep1Btn = document.getElementById('back-to-login-step1');
+
+    let inlineLoginEmail = '';
+
+    // Auto-clean non-digits (OTP Input)
+    const otpInput = document.getElementById('login-otp-code') as HTMLInputElement;
+    otpInput?.addEventListener('input', () => {
+      let val = otpInput.value.replace(/\D/g, '');
+      if (val.length > 6) val = val.substring(0, 6);
+      otpInput.value = val;
+    });
+
+    // Login Step 1 Submit
+    loginStep1Form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = (document.getElementById('login-email') as HTMLInputElement).value.replace(/\s+/g, '');
+      const password = (document.getElementById('login-password') as HTMLInputElement).value.trim();
+
+      loginStep1Btn.disabled = true;
+      loginStep1Btn.innerText = 'Memverifikasi Sandi...';
+      hideAlert();
+
+      try {
+        const response = await apiFetch('/api/auth/login-step1', {
+          method: 'POST',
+          requireAuth: false,
+          body: JSON.stringify({ email, password }),
+        });
+
+        // Success Step 1 -> Show OTP Step 2
+        inlineLoginEmail = email;
+        targetEmailLabel.innerText = email;
+
+        loginStep1Form.classList.add('hidden');
+        loginStep2Form.classList.remove('hidden');
+
+        showAlert(response.message || 'Kode OTP telah dikirimkan ke email Anda.', 'success');
+      } catch (err: any) {
+        console.error('Guest Login Step 1 failed:', err);
+        showAlert(err.message || 'Email atau password salah.', 'error');
+      } finally {
+        loginStep1Btn.disabled = false;
+        loginStep1Btn.innerText = 'Lanjutkan ke Verifikasi OTP';
+      }
+    });
+
+    // Login Step 2 Submit
+    loginStep2Form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const otpCode = otpInput.value.trim();
+      if (otpCode.length !== 6) {
+        showAlert('Kode OTP harus berupa 6 digit angka.', 'error');
+        return;
+      }
+
+      loginStep2Btn.disabled = true;
+      loginStep2Btn.innerText = 'Memasuki Sesi...';
+      hideAlert();
+
+      try {
+        const response = await apiFetch('/api/auth/login-step2', {
+          method: 'POST',
+          requireAuth: false,
+          body: JSON.stringify({ email: inlineLoginEmail, otp_code: otpCode }),
+        });
+
+        // Store session tokens
+        localStorage.setItem('token', response.token);
+        localStorage.setItem('user', JSON.stringify(response.user));
+
+        showAlert('Autentikasi berhasil! Menyinkronkan checkout Anda...', 'success');
+
+        // Reload page to reflect authenticated state dynamically
+        setTimeout(() => {
+          window.location.reload();
+        }, 600);
+
+      } catch (err: any) {
+        console.error('Guest Login Step 2 OTP failed:', err);
+        showAlert(err.message || 'OTP tidak cocok atau kedaluwarsa.', 'error');
+      } finally {
+        loginStep2Btn.disabled = false;
+        loginStep2Btn.innerText = 'Verifikasi & Masuk';
+      }
+    });
+
+    // Back to Step 1
+    backToStep1Btn?.addEventListener('click', () => {
+      inlineLoginEmail = '';
+      hideAlert();
+      loginStep2Form.classList.add('hidden');
+      loginStep1Form.classList.remove('hidden');
+    });
+  }
+
+  // ── 5. FLOW B: AUTHENTICATED DOMAIN CONFIGURATION ──
+  function initAuthForm() {
+    const authRegisterYears = document.getElementById('auth-register-years') as HTMLSelectElement;
+    
+    // Change action button state
+    checkoutActionBtn.disabled = false;
+    checkoutActionBtn.textContent = 'Proses Pendaftaran Domain';
+    if (disclaimerAlert) disclaimerAlert.classList.add('hidden');
+
+    // Update calculated totals when years dropdown changes
+    authRegisterYears?.addEventListener('change', () => {
+      const years = parseInt(authRegisterYears.value, 10);
+      calculateSidebarPrice(years);
+    });
+
+    // Submit handler (when clicking Lanjutkan ke Pembayaran)
+    checkoutActionBtn?.addEventListener('click', () => {
+      const years = parseInt(authRegisterYears.value, 10);
+      const ns1 = (document.getElementById('ns-1') as HTMLInputElement).value.trim();
+      const ns2 = (document.getElementById('ns-2') as HTMLInputElement).value.trim();
+
+      if ((ns1 && !ns2) || (!ns1 && ns2)) {
+        showAlert('Jika Anda ingin menggunakan nameserver kustom, silakan masukkan minimal 2 nameservers kustom.', 'error');
+        return;
+      }
+
+      const calculated = (window as any)._checkoutCalculatedTotals || {};
+
+      // Prepare payload to save to sessionStorage
+      const cleanDomain = domainParam.toLowerCase();
+      const firstDot = cleanDomain.indexOf('.');
+      const domainName = firstDot !== -1 ? cleanDomain.substring(0, firstDot) : cleanDomain;
+      const domainExtension = firstDot !== -1 ? cleanDomain.substring(firstDot).replace(/^\./, '') : '';
+
+      const pendingCheckout = {
+        domainName: domainName,
+        domainExtension: domainExtension,
+        years: calculated.years || years,
+        ns: ns1 && ns2 ? [ns1, ns2] : [],
+        price: calculated.price || 0,
+        regularPrice: calculated.regularPrice || calculated.price || 0,
+        isPromo: !!calculated.isPromo,
+        isPremium: !!calculated.isPremium
+      };
+
+      sessionStorage.setItem('pending_domain_checkout', JSON.stringify(pendingCheckout));
+      window.location.href = '/domains/payment';
+    });
+  }
+
+  function showAlert(message: string, type: 'success' | 'error' | 'warning') {
+    if (!alertBox) return;
+    alertBox.className = `alert alert-${type}`;
+    alertBox.innerText = message;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function hideAlert() {
+    if (alertBox) alertBox.className = 'alert hidden';
+  }
+
+  // Execute on load
+  initPage();
+</script>
+
+<style>
+  /* Tabs styling */
+  .tab-btn {
+    flex: 1;
+    text-align: center;
+    padding: 14px 0;
+    font-size: 13.5px;
+    font-weight: 700;
+    font-family: var(--font-heading);
+    color: var(--text-secondary);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+  }
+  .tab-btn:hover {
+    color: var(--text-primary);
+    background: var(--bg-tertiary);
+  }
+  .tab-btn.active {
+    color: var(--accent-primary);
+    border-bottom-color: var(--accent-primary);
+    background: var(--bg-primary);
+  }
+
+  .form-section-title {
+    font-family: var(--font-heading);
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--accent-primary);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  .checkout-grid {
+    display: grid;
+    grid-template-columns: 1.35fr 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+
+  @media (max-width: 868px) {
+    .checkout-grid {
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+  }
+
+  .sidebar-sticky-card {
+    padding: 28px !important;
+    border-radius: 12px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-md);
+    position: sticky;
+    top: 100px;
+  }
+
+  .form-control-compact {
+    font-family: var(--font-body);
+    font-size: 13px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 6px 10px;
+    width: 100%;
+    outline: none;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    transition: border-color 0.15s ease;
+  }
+  .form-control-compact:focus {
+    border-color: var(--border-focus);
+  }
+
+  /* Skeleton animation pulse */
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .scroll-styled::-webkit-scrollbar {
+    width: 6px;
+  }
+  .scroll-styled::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scroll-styled::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 20px;
+  }
+</style>
