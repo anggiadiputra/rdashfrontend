@@ -98,15 +98,15 @@ import Layout from '../layouts/Layout.astro';
               </div>
             </div>
 
+            {import.meta.env.PROD && import.meta.env.PUBLIC_TURNSTILE_SITE_KEY && (
+              <div class="form-group mt-4 flex justify-center">
+                <div class="cf-turnstile" data-sitekey={import.meta.env.PUBLIC_TURNSTILE_SITE_KEY} data-theme="auto" data-callback="onTurnstileSuccess"></div>
+              </div>
+            )}
+
             <button type="submit" id="submit-btn" class="btn btn-primary btn-block mt-4">
               Daftar Sekarang
             </button>
-
-            {import.meta.env.PROD && import.meta.env.PUBLIC_TURNSTILE_SITE_KEY && (
-              <div class="form-group mt-4 flex justify-center">
-                <div class="cf-turnstile" data-sitekey={import.meta.env.PUBLIC_TURNSTILE_SITE_KEY} data-theme="auto"></div>
-              </div>
-            )}
           </form>
 
           <div class="auth-footer text-center mt-4">
@@ -175,6 +175,17 @@ import Layout from '../layouts/Layout.astro';
     const registerForm = document.getElementById('register-form') as HTMLFormElement;
     const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
     const alertBox = document.getElementById('alert-box') as HTMLDivElement;
+
+    // Turnstile Logic
+    if (typeof window !== 'undefined') {
+      const turnstileEl = document.querySelector('.cf-turnstile');
+      if (turnstileEl) {
+        submitBtn.disabled = true;
+      }
+      (window as any).onTurnstileSuccess = function() {
+        submitBtn.disabled = false;
+      };
+    }
 
     // Initialize Indonesian administrative region dropdowns
     const provinceSelect = document.getElementById('state') as HTMLSelectElement;
@@ -377,7 +388,7 @@ import Layout from '../layouts/Layout.astro';
         
       } catch (err: any) {
         console.error('Registration failed:', err);
-        let errorMsg = err.message || 'Pendaftaran gagal. Silakan coba lagi.';
+        let errorMsg = err.message || 'Pendaftaran gagal. Silakan periksa kembali data Anda.';
         
         if (err.errors) {
           const errorFields = Object.entries(err.errors)
@@ -391,10 +402,11 @@ import Layout from '../layouts/Layout.astro';
         // Reset turnstile if validation fails so user can try again
         if (typeof window !== 'undefined' && (window as any).turnstile) {
           (window as any).turnstile.reset();
+          submitBtn.disabled = true; // Disable again until verified
+        } else {
+          submitBtn.disabled = false;
         }
 
-      } finally {
-        submitBtn.disabled = false;
         submitBtn.innerText = 'Daftar Sekarang';
       }
     });

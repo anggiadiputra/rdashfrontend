@@ -31,15 +31,15 @@ import Layout from '../layouts/Layout.astro';
             </div>
           </div>
 
+          {import.meta.env.PROD && import.meta.env.PUBLIC_TURNSTILE_SITE_KEY && (
+            <div class="form-group mt-4 flex justify-center">
+              <div class="cf-turnstile" data-sitekey={import.meta.env.PUBLIC_TURNSTILE_SITE_KEY} data-theme="auto" data-callback="onTurnstileSuccess"></div>
+            </div>
+          )}
+
           <button type="submit" id="step1-submit-btn" class="btn btn-primary btn-block mt-4">
             Lanjutkan ke Verifikasi
           </button>
-          
-          {import.meta.env.PROD && import.meta.env.PUBLIC_TURNSTILE_SITE_KEY && (
-            <div class="form-group mt-4 flex justify-center">
-              <div class="cf-turnstile" data-sitekey={import.meta.env.PUBLIC_TURNSTILE_SITE_KEY} data-theme="auto"></div>
-            </div>
-          )}
         </form>
 
         <!-- ==================== STEP 2: OTP VERIFICATION ==================== -->
@@ -101,6 +101,17 @@ import Layout from '../layouts/Layout.astro';
     const backBtn = document.getElementById('back-to-step1') as HTMLButtonElement;
     const footerLink = document.getElementById('auth-footer-link') as HTMLDivElement;
 
+    // Turnstile Logic
+    if (typeof window !== 'undefined') {
+      const turnstileEl = document.querySelector('.cf-turnstile');
+      if (turnstileEl) {
+        step1Btn.disabled = true;
+      }
+      (window as any).onTurnstileSuccess = function() {
+        step1Btn.disabled = false;
+      };
+    }
+
     let userEmail = '';
 
     // Auto-clean non-digits (like spaces/letters) from OTP input in real-time
@@ -155,16 +166,17 @@ import Layout from '../layouts/Layout.astro';
 
         showAlert(response.message || 'Kode OTP telah dikirimkan ke email Anda.', 'success');
       } catch (err: any) {
-        console.error('Login Step 1 failed:', err);
-        showAlert(err.message || 'Login gagal. Email atau password salah.', 'error');
+        console.error('Login step 1 failed:', err);
+        showAlert(err.message || 'Email atau kata sandi salah. Silakan coba lagi.', 'error');
         
         // Reset turnstile if validation fails so user can try again
         if (typeof window !== 'undefined' && (window as any).turnstile) {
           (window as any).turnstile.reset();
+          step1Btn.disabled = true; // Disable again until verified
+        } else {
+          step1Btn.disabled = false;
         }
 
-      } finally {
-        step1Btn.disabled = false;
         step1Btn.innerText = 'Lanjutkan ke Verifikasi';
       }
     });
