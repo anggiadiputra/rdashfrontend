@@ -17,18 +17,23 @@ import Layout from '../layouts/Layout.astro';
       </p>
 
       <!-- Search Input Container -->
-      <form id="whois-search-form" class="search-box glass-card" style="width: 100%; max-width: 750px; padding: 1.5rem; border-radius: var(--radius-lg);">
+      <form id="whois-search-form" class="search-box glass-card whois-form-container">
         <div class="whois-input-group">
-          <input
-            type="text"
-            id="whois-input"
-            class="form-control-compact"
-            placeholder="Masukkan nama domain lengkap... (contoh: google.com atau bisnissaya.id)"
-            required
-            autocomplete="off"
-            style="flex: 1; height: 3.5rem; font-size: 1.05rem; padding: 0 20px; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: var(--bg-primary); color: var(--text-primary);"
-          />
-          <button type="submit" id="whois-search-btn" class="btn btn-primary" style="height: 3.5rem; padding: 0 28px; font-weight: 700; border-radius: var(--radius-md); font-size: 14px; white-space: nowrap; transition: var(--transition-smooth);">
+          <div class="input-wrapper">
+            <svg class="lucide lucide-search input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input
+              type="text"
+              id="whois-input"
+              class="form-control-compact"
+              placeholder="Masukkan nama domain... (cth: google.com)"
+              required
+              autocomplete="off"
+            />
+          </div>
+          <button type="submit" id="whois-search-btn" class="btn btn-primary whois-submit-btn">
             Cek WHOIS
           </button>
         </div>
@@ -586,29 +591,104 @@ import Layout from '../layouts/Layout.astro';
     box-shadow: var(--shadow-lg), 0 20px 30px -10px rgba(61, 29, 179, 0.1);
   }
 
+  .whois-form-container {
+    width: 100%;
+    max-width: 750px;
+    padding: 1.5rem;
+    border-radius: var(--radius-lg);
+  }
+
   .whois-input-group {
     display: flex;
     gap: 0.75rem;
     width: 100%;
+    align-items: center;
   }
 
-  @media (max-width: 640px) {
-    .whois-input-group {
-      flex-direction: column;
-    }
-    .form-control-compact {
-      width: 100% !important;
-    }
+  .input-wrapper {
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    width: 100%;
+  }
+
+  .input-icon {
+    position: absolute;
+    left: 20px;
+    color: var(--text-muted);
+    pointer-events: none;
   }
 
   .form-control-compact {
+    width: 100%;
+    height: 3.5rem;
+    font-size: 1.05rem;
+    padding: 0 20px 0 52px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    background: var(--bg-primary);
+    color: var(--text-primary);
     transition: var(--transition-smooth);
   }
+
+  .form-control-compact::placeholder {
+    color: var(--text-muted);
+    font-size: 1rem;
+    transition: var(--transition-smooth);
+  }
+
   .form-control-compact:focus {
     border-color: var(--border-focus) !important;
     box-shadow: 0 0 0 4px var(--accent-light) !important;
     outline: none;
     transform: scale(1.005);
+  }
+
+  .whois-submit-btn {
+    height: 3.5rem;
+    padding: 0 28px;
+    font-weight: 700;
+    border-radius: var(--radius-md);
+    font-size: 15px;
+    white-space: nowrap;
+    transition: var(--transition-smooth);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  @media (max-width: 640px) {
+    .whois-form-container {
+      padding: 1.25rem;
+      border-radius: var(--radius-md);
+    }
+    .whois-input-group {
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .form-control-compact {
+      font-size: 0.95rem;
+      padding: 0 16px 0 46px;
+      height: 3.25rem;
+    }
+    .form-control-compact::placeholder {
+      font-size: 0.85rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .input-icon {
+      left: 16px;
+      width: 18px;
+      height: 18px;
+    }
+    .whois-submit-btn {
+      width: 100%;
+      height: 3.25rem;
+      font-size: 14px;
+    }
   }
 
   /* Empty state graphic design */
