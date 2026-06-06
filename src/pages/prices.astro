@@ -223,6 +223,9 @@ import Layout from '../layouts/Layout.astro';
       const res = await apiFetch('/api/domains/prices', { requireAuth: false });
       if (res.success && Array.isArray(res.data) && res.data.length > 0) {
         allPrices = res.data;
+        if (res.meta && res.meta.globalWhoisPrice !== undefined) {
+          (window as any)._globalWhoisPrice = res.meta.globalWhoisPrice;
+        }
       } else {
         throw new Error("No data returned");
       }
@@ -342,8 +345,19 @@ import Layout from '../layouts/Layout.astro';
       if (mainTableCard) mainTableCard.classList.add('hidden');
       if (whoisGlobalContainer) {
         whoisGlobalContainer.classList.remove('hidden');
-        const comItem = allPrices.find(p => p.extension === '.com');
-        const globalWhoisPrice = (comItem && comItem.whoisPrice > 0) ? comItem.whoisPrice : 15000;
+        
+        const providedGlobal = (window as any)._globalWhoisPrice;
+        let globalWhoisPrice = 15000;
+        
+        if (providedGlobal !== undefined) {
+          globalWhoisPrice = providedGlobal;
+        } else {
+          const comItem = allPrices.find(p => p.extension === '.com');
+          if (comItem && comItem.whoisPrice !== undefined) {
+            globalWhoisPrice = comItem.whoisPrice;
+          }
+        }
+
         const priceEl = document.getElementById('customer-whois-price');
         if (priceEl) {
           priceEl.textContent = formatCurrency(globalWhoisPrice) + ' / tahun';
