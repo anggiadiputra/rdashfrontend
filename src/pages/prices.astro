@@ -338,8 +338,6 @@ import Layout from '../layouts/Layout.astro';
     const whoisGlobalContainer = document.getElementById('whois-global-container') as HTMLDivElement;
 
     if (currentTab === 'whois') {
-      if (filtersRow) filtersRow.classList.add('hidden');
-      if (mainTableCard) mainTableCard.classList.add('hidden');
       if (whoisGlobalContainer) {
         whoisGlobalContainer.classList.remove('hidden');
         const comItem = allPrices.find(p => p.extension === '.com');
@@ -349,8 +347,8 @@ import Layout from '../layouts/Layout.astro';
           priceEl.textContent = formatCurrency(globalWhoisPrice) + ' / tahun';
         }
       }
-      paginationContainer.classList.add('hidden');
-      return;
+      if (filtersRow) filtersRow.classList.remove('hidden');
+      if (mainTableCard) mainTableCard.classList.remove('hidden');
     } else {
       if (filtersRow) filtersRow.classList.remove('hidden');
       if (mainTableCard) mainTableCard.classList.remove('hidden');
