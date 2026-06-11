@@ -24,6 +24,9 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
       </button>
     </div>
 
+    <!-- Alert Box -->
+    <div id="pricing-alert-box" class="alert hidden" style="margin-bottom: 20px;"></div>
+
     <!-- Filters Row -->
     <div id="filters-row" class="card" style="padding: 20px !important; border-radius: 12px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid var(--border); background: var(--surface);">
       <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap; justify-content: space-between;">
@@ -45,16 +48,8 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
       </div>
     </div>
 
-    <!-- Pricing Tabs -->
-    <div style="display: flex; gap: 16px; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 2px;">
-      <button class="tab-link active" data-tab-type="register">Harga Pendaftaran</button>
-      <button class="tab-link" data-tab-type="renew">Harga Perpanjangan</button>
-      <button class="tab-link" data-tab-type="transfer">Harga Transfer & Fitur</button>
-      <button class="tab-link" data-tab-type="whois">Proteksi WHOIS</button>
-    </div>
-
-    <!-- Global WHOIS Price Card (shown only on WHOIS tab) -->
-    <div id="whois-global-container" class="hidden" style="margin-bottom: 24px;">
+    <!-- Global WHOIS Price Card (always visible) -->
+    <div id="whois-global-container" style="margin-bottom: 24px;">
       <div class="card" style="padding: 20px !important; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); max-width: 480px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
         <h3 style="font-size: 14.5px; font-weight: 700; margin: 0 0 6px; display: flex; align-items: center; gap: 8px;">
           <svg class="lucide lucide-shield" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color: var(--accent);"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
@@ -96,12 +91,13 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
         <table class="table" style="width: 100%; border-collapse: collapse;">
           <thead>
             <tr style="background: var(--bg); border-bottom: 1px solid var(--border);">
-              <th style="padding: 14px 20px; font-size: 11px; font-weight: 600; text-align: left; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Ekstensi (TLD)</th>
-              <th id="dynamic-header-1" style="padding: 14px 20px; font-size: 11px; font-weight: 600; text-align: right; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Harga 1 Tahun</th>
-              <th id="dynamic-header-2" style="padding: 14px 20px; font-size: 11px; font-weight: 600; text-align: right; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Harga 2 Tahun</th>
-              <th id="dynamic-header-3" style="padding: 14px 20px; font-size: 11px; font-weight: 600; text-align: right; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Harga 5 Tahun</th>
-              <th style="padding: 14px 20px; font-size: 11px; font-weight: 600; text-align: left; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; width: 220px;">Markup Aktif</th>
-              <th style="padding: 14px 20px; font-size: 11px; font-weight: 600; text-align: right; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; width: 220px;">Aksi</th>
+              <th style="padding: 14px 20px; font-size: 11px; font-weight: 600; text-align: left; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Extension</th>
+              <th style="padding: 14px 20px; font-size: 11px; font-weight: 600; text-align: right; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Registration</th>
+              <th style="padding: 14px 20px; font-size: 11px; font-weight: 600; text-align: right; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Transfer</th>
+              <th style="padding: 14px 20px; font-size: 11px; font-weight: 600; text-align: right; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Renewal</th>
+              <th style="padding: 14px 20px; font-size: 11px; font-weight: 600; text-align: right; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Restore</th>
+              <th style="padding: 14px 20px; font-size: 11px; font-weight: 600; text-align: left; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; width: 180px;">Markup Aktif</th>
+              <th style="padding: 14px 20px; font-size: 11px; font-weight: 600; text-align: right; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; width: 180px;">Aksi</th>
             </tr>
           </thead>
           <tbody id="prices-tbody">
@@ -558,14 +554,24 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 <script>
   import { apiFetch } from '../../utils/api';
 
+  const alertBox = document.getElementById('pricing-alert-box') as HTMLDivElement;
+
+  function showAlert(msg: string, type: 'success' | 'error') {
+    if (!alertBox) return;
+    alertBox.className = `alert alert-${type}`;
+    alertBox.textContent = msg;
+    alertBox.classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function hideAlert() {
+    alertBox?.classList.add('hidden');
+  }
+
   const loadingView = document.getElementById('prices-loading') as HTMLDivElement;
   const emptyView = document.getElementById('prices-empty') as HTMLDivElement;
   const tableWrap = document.getElementById('prices-table-wrap') as HTMLDivElement;
   const pricesTbody = document.getElementById('prices-tbody') as HTMLTableSectionElement;
-
-  const dynamicHeader1 = document.getElementById('dynamic-header-1') as HTMLTableCellElement;
-  const dynamicHeader2 = document.getElementById('dynamic-header-2') as HTMLTableCellElement;
-  const dynamicHeader3 = document.getElementById('dynamic-header-3') as HTMLTableCellElement;
 
   // Details Modal elements
   const detailsModal = document.getElementById('details-modal') as HTMLDivElement;
@@ -628,21 +634,6 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
   const renderTable = () => {
     pricesTbody.innerHTML = '';
 
-    const filtersRow = document.getElementById('filters-row') as HTMLDivElement;
-    const mainTableCard = document.getElementById('main-table-card') as HTMLDivElement;
-
-    if (currentTab === 'whois') {
-      if (filtersRow) filtersRow.classList.add('hidden');
-      if (mainTableCard) mainTableCard.classList.add('hidden');
-      whoisGlobalContainer.classList.remove('hidden');
-      paginationContainer.classList.add('hidden');
-      return;
-    } else {
-      if (filtersRow) filtersRow.classList.remove('hidden');
-      if (mainTableCard) mainTableCard.classList.remove('hidden');
-      whoisGlobalContainer.classList.add('hidden');
-    }
-
     filteredPrices = allPrices.filter(item => {
       const matchSearch = item.extension.toLowerCase().includes(searchQuery.toLowerCase());
       const matchCategory = checkCategory(item, currentCategory);
@@ -658,24 +649,6 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 
     emptyView.classList.add('hidden');
     tableWrap.classList.remove('hidden');
-
-    // Update Headers and Display
-    if (currentTab === 'register') {
-      dynamicHeader1.innerText = 'Daftar 1 Tahun';
-      dynamicHeader1.style.textAlign = 'right';
-      dynamicHeader2.innerText = 'Daftar 2 Tahun';
-      dynamicHeader3.innerText = 'Daftar 5 Tahun';
-    } else if (currentTab === 'renew') {
-      dynamicHeader1.innerText = 'Perpanjang 1 Thn';
-      dynamicHeader1.style.textAlign = 'right';
-      dynamicHeader2.innerText = 'Perpanjang 2 Thn';
-      dynamicHeader3.innerText = 'Perpanjang 5 Thn';
-    } else if (currentTab === 'transfer') {
-      dynamicHeader1.innerText = 'Biaya Transfer';
-      dynamicHeader1.style.textAlign = 'right';
-      dynamicHeader2.innerText = 'Mata Uang';
-      dynamicHeader3.innerText = '';
-    }
 
     const totalItems = filteredPrices.length;
     const totalPages = Math.ceil(totalItems / limitPerPage);
@@ -693,56 +666,41 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 
       let tldHtml = `<span class="domain-name" style="font-family: monospace; font-size:14px; font-weight: 700; color: var(--accent);">${item.extension}</span>`;
       if (item.promo) {
-        tldHtml += `<span style="background:#fee2e2; color:#ef4444; margin-left: 6px; font-size:9px; padding: 2px 4px; font-weight: 700; border-radius: 4px;">PROMO</span>`;
+        tldHtml += `<span class="badge" style="background-color: #d1fae5; color: #065f46; margin-left: 6px; font-size:10.5px; padding: 2px 6px; font-weight: 600; border-radius: 4px;">Promo</span>`;
       }
 
-      let col1Html = '';
-      let col2Html = '';
-      let col3Html = '';
+      const regPrice = item.registerPrice || 0;
+      const renewPrice = item.renewPrice || 0;
+      const transferPrice = item.transferPrice || 0;
+      const promoRegPrice = item.regularRegisterPrice || 0;
+      const isPromoActive = item.promo && promoRegPrice > 0 && regPrice < promoRegPrice;
 
-      if (currentTab === 'register') {
-        const p1 = item.registrationByYear['1'] || item.registerPrice || 0;
-        const p2 = item.registrationByYear['2'] || 0;
-        const p5 = item.registrationByYear['5'] || 0;
-        const regP1 = item.regularRegistrationByYear?.['1'] || item.regularRegisterPrice || 0;
-        const isPromoActiveP1 = item.promo && regP1 > 0 && p1 < regP1;
-
-        col1Html = isPromoActiveP1
-          ? `<span style="text-decoration: line-through; color: var(--text-muted); font-size:11px; margin-right: 6px;">${formatCurrency(regP1)}</span><span style="font-weight: 700; color: #ef4444;">${formatCurrency(p1)}</span>`
-          : `<span style="font-weight: 700; color: var(--text);">${formatCurrency(p1)}</span>`;
-
-        col2Html = p2 > 0 ? `<span>${formatCurrency(p2)}</span>` : '<span class="text-muted">-</span>';
-        col3Html = p5 > 0 ? `<span>${formatCurrency(p5)}</span>` : '<span class="text-muted">-</span>';
-      } else if (currentTab === 'renew') {
-        const p1 = item.renewalByYear['1'] || item.renewPrice || 0;
-        const p2 = item.renewalByYear['2'] || 0;
-        const p5 = item.renewalByYear['5'] || 0;
-
-        col1Html = `<span style="font-weight: 700; color: var(--text);">${formatCurrency(p1)}</span>`;
-        col2Html = p2 > 0 ? `<span>${formatCurrency(p2)}</span>` : '<span class="text-muted">-</span>';
-        col3Html = p5 > 0 ? `<span>${formatCurrency(p5)}</span>` : '<span class="text-muted">-</span>';
-      } else if (currentTab === 'transfer') {
-        const tf = item.transferPrice || 0;
-        col1Html = `<span style="font-weight: 700; color: var(--text);">${formatCurrency(tf)}</span>`;
-        col2Html = `<span style="text-transform: uppercase; font-weight:600; font-size:11px; color: var(--text-secondary);">${item.currency || 'IDR'}</span>`;
-        col3Html = '<span class="text-muted">-</span>';
+      const ext = item.extension.toLowerCase();
+      let restorePrice = 0;
+      if (ext === '.id') {
+        restorePrice = renewPrice + 800000;
+      } else if (ext === '.co.id') {
+        restorePrice = renewPrice + 1200000;
+      } else if (ext.endsWith('.id')) {
+        restorePrice = renewPrice + 198000;
       } else {
-        // WHOIS tab
-        const isId = item.extension.toLowerCase().endsWith('.id') || item.extension.toLowerCase().includes('.id.');
-        col1Html = isId 
-          ? `<span style="color: var(--text-secondary); font-weight: 500;">Tidak Didukung / Gratis</span>`
-          : `<span style="color: #16a34a; font-weight: 600;">Didukung (Global)</span>`;
-        col2Html = `<span style="font-weight: 700; color: var(--text);">${formatCurrency(item.whoisPrice || 0)}</span>`;
-        col3Html = '<span class="text-muted">-</span>';
+        restorePrice = renewPrice + 1200000;
+      }
+
+      let regHtml = '';
+      if (isPromoActive) {
+        regHtml = `
+          <div style="display: flex; flex-direction: column; align-items: flex-end; line-height: 1.2;">
+            <span style="text-decoration: line-through; color: var(--text-muted); font-size: 11px;">${formatCurrency(promoRegPrice)}</span>
+            <span style="font-weight: 700; color: var(--text);">${formatCurrency(regPrice)}</span>
+          </div>
+        `;
+      } else {
+        regHtml = `<span style="font-weight: 700; color: var(--text);">${formatCurrency(regPrice)}</span>`;
       }
 
       let markupHtml = '';
-      if (currentTab === 'whois') {
-        const isId = item.extension.toLowerCase().endsWith('.id') || item.extension.toLowerCase().includes('.id.');
-        markupHtml = isId
-          ? `<span class="text-muted" style="font-size:11px;">Gratis selamanya (.ID)</span>`
-          : `<span class="text-muted" style="font-size:11px;">Harga Global</span>`;
-      } else if (markup) {
+      if (markup) {
         const typeLabel = markup.markup_type === 'percentage' ? 'Persen' : 'Nominal';
         const valueLabel = markup.markup_type === 'percentage' ? `${markup.markup_value}%` : formatCurrency(markup.markup_value);
         markupHtml = `<div class="owner-info">
@@ -752,19 +710,18 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
         markupHtml = `<span class="text-muted" style="font-size:11px;">Default Cost Price</span>`;
       }
 
-      const actionHtml = currentTab === 'whois'
-        ? `<span class="btn-primary-link btn-details-action" data-tld="${item.extension}">Detail</span>`
-        : `
-          <span class="btn-primary-link btn-details-action" data-tld="${item.extension}" style="margin-right:8px;">Detail</span>
-          <button class="btn-primary-link edit-btn" data-id="${markup?.id || ''}" data-ext="${item.extension}">Edit</button>
-          ${markup ? `<button class="btn-danger-link delete-btn" data-id="${markup.id}">Hapus</button>` : ''}
-        `;
+      const actionHtml = `
+        <span class="btn-primary-link btn-details-action" data-tld="${item.extension}" style="margin-right:8px;">Detail</span>
+        <button class="btn-primary-link edit-btn" data-id="${markup?.id || ''}" data-ext="${item.extension}">Edit</button>
+        ${markup ? `<button class="btn-danger-link delete-btn" data-id="${markup.id}">Hapus</button>` : ''}
+      `;
 
       tr.innerHTML = `
         <td style="vertical-align: middle;">${tldHtml}</td>
-        <td style="text-align: ${currentTab === 'whois' ? 'left' : 'right'}; vertical-align: middle;">${col1Html}</td>
-        <td style="text-align: right; vertical-align: middle;">${col2Html}</td>
-        <td style="text-align: right; vertical-align: middle;">${col3Html}</td>
+        <td style="text-align: right; vertical-align: middle;">${regHtml}</td>
+        <td style="text-align: right; vertical-align: middle; font-weight: 500; color: var(--text);">${formatCurrency(transferPrice)}</td>
+        <td style="text-align: right; vertical-align: middle; font-weight: 500; color: var(--text);">${formatCurrency(renewPrice)}</td>
+        <td style="text-align: right; vertical-align: middle; font-weight: 500; color: var(--text);">${formatCurrency(restorePrice)}</td>
         <td style="vertical-align: middle;">${markupHtml}</td>
         <td style="text-align: right; vertical-align: middle; white-space: nowrap;">${actionHtml}</td>
       `;
@@ -811,6 +768,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
   };
 
   const loadData = async () => {
+    hideAlert();
     loadingView.classList.remove('hidden');
     tableWrap.classList.add('hidden');
     emptyView.classList.add('hidden');
@@ -964,13 +922,14 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     const markup_value = parseFloat(editValueField.value);
     const whois_price = parseFloat(editWhoisField.value) || 0;
 
+    hideAlert();
     if (!extension || isNaN(markup_value)) {
-      alert('Mohon lengkapi seluruh kolom markup.');
+      showAlert('Mohon lengkapi seluruh kolom markup.', 'error');
       return;
     }
 
     if (!extension.startsWith('.')) {
-      alert('Ekstensi domain harus diawali dengan titik (.) contoh: .com');
+      showAlert('Ekstensi domain harus diawali dengan titik (.) contoh: .com', 'error');
       return;
     }
 
@@ -985,17 +944,19 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
         })
       });
       editMarkupModal.classList.add('hidden');
+      showAlert('Markup harga domain berhasil disimpan.', 'success');
       await loadData();
     } catch (err: any) {
-      alert('Gagal menyimpan markup: ' + err.message);
+      showAlert('Gagal menyimpan markup: ' + err.message, 'error');
     }
   });
 
   // Global WHOIS Save handler
   saveGlobalWhoisBtn.addEventListener('click', async () => {
+    hideAlert();
     const val = parseFloat(globalWhoisInput.value);
     if (isNaN(val) || val < 0) {
-      alert('Mohon masukkan harga WHOIS yang valid.');
+      showAlert('Mohon masukkan harga WHOIS yang valid.', 'error');
       return;
     }
     
@@ -1012,10 +973,10 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
           whois_price: val
         })
       });
-      alert('Harga Proteksi WHOIS global berhasil disimpan.');
+      showAlert('Harga Proteksi WHOIS global berhasil disimpan.', 'success');
       await loadData();
     } catch (err: any) {
-      alert('Gagal menyimpan harga WHOIS: ' + err.message);
+      showAlert('Gagal menyimpan harga WHOIS: ' + err.message, 'error');
     } finally {
       saveGlobalWhoisBtn.disabled = false;
       saveGlobalWhoisBtn.innerText = 'Simpan Harga';
@@ -1023,12 +984,14 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
   });
 
   const handleDeleteMarkup = async (id: string | undefined) => {
+    hideAlert();
     if (!id || !confirm('Apakah Anda yakin ingin menghapus markup untuk TLD ini?')) return;
     try {
       await apiFetch(`/api/admin/pricing-markups/${id}`, { method: 'DELETE' });
+      showAlert('Markup harga berhasil dihapus.', 'success');
       await loadData();
     } catch (err: any) {
-      alert('Gagal menghapus markup: ' + err.message);
+      showAlert('Gagal menghapus markup: ' + err.message, 'error');
     }
   };
 
@@ -1115,17 +1078,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     });
   });
 
-  // Tab links
-  document.querySelectorAll('[data-tab-type]').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      document.querySelectorAll('[data-tab-type]').forEach(b => b.classList.remove('active'));
-      const target = e.target as HTMLButtonElement;
-      target.classList.add('active');
-      currentTab = target.dataset.tabType || 'register';
-      currentPage = 1;
-      renderTable();
-    });
-  });
+  // Search input
 
   document.getElementById('add-markup-btn')?.addEventListener('click', () => {
     openEditMarkupModal('');

@@ -37,38 +37,6 @@ import Layout from '../layouts/Layout.astro';
       </div>
     </div>
 
-    <!-- Pricing Tabs -->
-    <div style="display: flex; gap: 16px; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 2px;">
-      <button class="tab-link active" data-tab-type="register">Harga Pendaftaran</button>
-      <button class="tab-link" data-tab-type="renew">Harga Perpanjangan</button>
-      <button class="tab-link" data-tab-type="transfer">Harga Transfer & Fitur</button>
-      <button class="tab-link" data-tab-type="whois">Proteksi WHOIS</button>
-    </div>
-
-    <!-- Global WHOIS Price Card (shown only on WHOIS tab) -->
-    <div id="whois-global-container" class="hidden" style="margin-bottom: 24px;">
-      <div class="card" style="padding: 24px !important; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-secondary); max-width: 480px; box-shadow: var(--shadow-sm);">
-        <h3 style="font-size: 15px; font-weight: 700; margin: 0 0 8px; display: flex; align-items: center; gap: 8px;">
-          <svg class="lucide lucide-shield" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color: var(--accent-primary);"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          Biaya Proteksi WHOIS (WHOIS Privacy)
-        </h3>
-        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.5;">
-          Proteksi WHOIS Privacy menyembunyikan data kepemilikan domain Anda (Nama, Email, Telepon) dari publik untuk menghindari spam.
-        </p>
-        
-        <div style="background: var(--bg-primary); border: 1px solid var(--border-color); padding: 16px; border-radius: 10px; display: flex; flex-direction: column; gap: 12px;">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-weight: 500; color: var(--text-secondary);">Harga Proteksi WHOIS</span>
-            <span id="customer-whois-price" style="font-size: 18px; font-weight: 800; color: var(--accent-primary);">Rp 15.000 / tahun</span>
-          </div>
-          <div style="border-top: 1px dashed var(--border-color); padding-top: 8px; font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
-            <svg class="lucide lucide-info" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--warning);"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-            <span>Khusus domain Indonesia (.ID) gratis / Rp0 tanpa biaya tambahan.</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Main Table Wrapper -->
     <div id="main-table-card" class="table-card" style="border-radius: 12px; overflow: hidden; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); background: var(--bg-primary);">
       
@@ -89,11 +57,12 @@ import Layout from '../layouts/Layout.astro';
         <table class="table" style="width: 100%; border-collapse: collapse;">
           <thead>
             <tr style="background: var(--bg-secondary); border-bottom: 1px solid var(--border-color);">
-              <th style="padding: 14px 20px; font-size: 11px; font-weight: 600; text-align: left; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Ekstensi (TLD)</th>
-              <th id="dynamic-header-1" style="padding: 14px 20px; font-size: 11px; font-weight: 600; text-align: right; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Harga 1 Tahun</th>
-              <th id="dynamic-header-2" style="padding: 14px 20px; font-size: 11px; font-weight: 600; text-align: right; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Harga 2 Tahun</th>
-              <th id="dynamic-header-3" style="padding: 14px 20px; font-size: 11px; font-weight: 600; text-align: right; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Harga 5 Tahun</th>
-              <th id="dynamic-header-4" style="padding: 14px 20px; font-size: 11px; font-weight: 600; text-align: right; color: var(--text-secondary); width: 120px;"></th>
+              <th style="padding: 14px 20px; font-size: 11px; font-weight: 600; text-align: left; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Extension</th>
+              <th style="padding: 14px 20px; font-size: 11px; font-weight: 600; text-align: right; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Registration</th>
+              <th style="padding: 14px 20px; font-size: 11px; font-weight: 600; text-align: right; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Transfer</th>
+              <th style="padding: 14px 20px; font-size: 11px; font-weight: 600; text-align: right; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Renewal</th>
+              <th style="padding: 14px 20px; font-size: 11px; font-weight: 600; text-align: right; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Restore</th>
+              <th style="padding: 14px 20px; font-size: 11px; font-weight: 600; text-align: right; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; width: 120px;">Aksi</th>
             </tr>
           </thead>
           <tbody id="prices-tbody">
@@ -181,11 +150,6 @@ import Layout from '../layouts/Layout.astro';
   const tableWrap = document.getElementById('prices-table-wrap') as HTMLDivElement;
   const pricesTbody = document.getElementById('prices-tbody') as HTMLTableSectionElement;
   
-  const searchInput = document.getElementById('tld-search-input') as HTMLInputElement;
-  const dynamicHeader1 = document.getElementById('dynamic-header-1') as HTMLTableCellElement;
-  const dynamicHeader2 = document.getElementById('dynamic-header-2') as HTMLTableCellElement;
-  const dynamicHeader3 = document.getElementById('dynamic-header-3') as HTMLTableCellElement;
-
   // Modal elements
   const detailsModal = document.getElementById('details-modal') as HTMLDivElement;
   const modalTldDisplay = document.getElementById('modal-tld-display') as HTMLSpanElement;
@@ -197,7 +161,6 @@ import Layout from '../layouts/Layout.astro';
   const closeModalBtn = document.getElementById('close-modal-btn') as HTMLButtonElement;
 
   let allPrices: any[] = [];
-  let currentTab = 'register'; // 'register', 'renew', 'transfer'
   let currentCategory = 'all'; // 'all', 'popular', 'id', 'promo'
   let searchQuery = '';
   let currentPage = 1;
@@ -336,41 +299,6 @@ import Layout from '../layouts/Layout.astro';
   function renderTable() {
     pricesTbody.innerHTML = '';
 
-    const filtersRow = document.getElementById('filters-row') as HTMLDivElement;
-    const mainTableCard = document.getElementById('main-table-card') as HTMLDivElement;
-    const whoisGlobalContainer = document.getElementById('whois-global-container') as HTMLDivElement;
-
-    if (currentTab === 'whois') {
-      if (filtersRow) filtersRow.classList.add('hidden');
-      if (mainTableCard) mainTableCard.classList.add('hidden');
-      if (whoisGlobalContainer) {
-        whoisGlobalContainer.classList.remove('hidden');
-        
-        const providedGlobal = (window as any)._globalWhoisPrice;
-        let globalWhoisPrice = 15000;
-        
-        if (providedGlobal !== undefined) {
-          globalWhoisPrice = providedGlobal;
-        } else {
-          const comItem = allPrices.find(p => p.extension === '.com');
-          if (comItem && comItem.whoisPrice !== undefined) {
-            globalWhoisPrice = comItem.whoisPrice;
-          }
-        }
-
-        const priceEl = document.getElementById('customer-whois-price');
-        if (priceEl) {
-          priceEl.textContent = formatCurrency(globalWhoisPrice) + ' / tahun';
-        }
-      }
-      paginationContainer.classList.add('hidden');
-      return;
-    } else {
-      if (filtersRow) filtersRow.classList.remove('hidden');
-      if (mainTableCard) mainTableCard.classList.remove('hidden');
-      if (whoisGlobalContainer) whoisGlobalContainer.classList.add('hidden');
-    }
-
     // Filter list
     filteredPrices = allPrices.filter(item => {
       // 1. Search Query
@@ -390,25 +318,6 @@ import Layout from '../layouts/Layout.astro';
     emptyView.classList.add('hidden');
     tableWrap.classList.remove('hidden');
 
-    // Update Headers based on Active Tab
-    if (currentTab === 'register') {
-      dynamicHeader1.innerText = 'Daftar 1 Tahun';
-      dynamicHeader2.innerText = 'Daftar 2 Tahun';
-      dynamicHeader3.innerText = 'Daftar 5 Tahun';
-    } else if (currentTab === 'renew') {
-      dynamicHeader1.innerText = 'Perpanjang 1 Thn';
-      dynamicHeader2.innerText = 'Perpanjang 2 Thn';
-      dynamicHeader3.innerText = 'Perpanjang 5 Thn';
-    } else if (currentTab === 'transfer') {
-      dynamicHeader1.innerText = 'Biaya Transfer';
-      dynamicHeader2.innerText = 'Jenis Mata Uang';
-      dynamicHeader3.innerText = '';
-    } else if (currentTab === 'whois') {
-      dynamicHeader1.innerText = 'Status WHOIS';
-      dynamicHeader2.innerText = 'Biaya Proteksi';
-      dynamicHeader3.innerText = '';
-    }
-
     const totalItems = filteredPrices.length;
     const totalPages = Math.ceil(totalItems / limitPerPage);
     if (currentPage > totalPages) currentPage = Math.max(1, totalPages);
@@ -424,56 +333,45 @@ import Layout from '../layouts/Layout.astro';
       // Build TLD Column with Promo Badge if active
       let tldHtml = `<span class="domain-name" style="font-family: monospace; font-size:14.5px; font-weight: 700; color: var(--accent-primary);">${item.extension}</span>`;
       if (item.promo) {
-        tldHtml += `<span class="badge" style="background-color: var(--error-bg); color: var(--error); border: 1px solid rgba(220,38,38,0.15); margin-left: 6px; font-size:9.5px; padding: 2px 6px; font-weight: 700; border-radius: 4px;">PROMO</span>`;
+        tldHtml += `<span class="badge" style="background-color: #d1fae5; color: #065f46; margin-left: 6px; font-size:10.5px; padding: 2px 6px; font-weight: 600; border-radius: 4px;">Promo</span>`;
       }
 
-      let col1Html = '';
-      let col2Html = '';
-      let col3Html = '';
+      const regPrice = item.registerPrice || 0;
+      const renewPrice = item.renewPrice || 0;
+      const transferPrice = item.transferPrice || 0;
+      const promoRegPrice = item.regularRegisterPrice || 0;
+      const isPromoActive = item.promo && promoRegPrice > 0 && regPrice < promoRegPrice;
 
-      if (currentTab === 'register') {
-        const p1 = item.registrationByYear['1'] || item.registerPrice || 0;
-        const p2 = item.registrationByYear['2'] || 0;
-        const p5 = item.registrationByYear['5'] || 0;
+      const ext = item.extension.toLowerCase();
+      let restorePrice = 0;
+      if (ext === '.id') {
+        restorePrice = renewPrice + 800000;
+      } else if (ext === '.co.id') {
+        restorePrice = renewPrice + 1200000;
+      } else if (ext.endsWith('.id')) {
+        restorePrice = renewPrice + 198000;
+      } else {
+        restorePrice = renewPrice + 1200000;
+      }
 
-        const regP1 = item.regularRegistrationByYear?.['1'] || item.regularRegisterPrice || 0;
-        const isPromoActiveP1 = item.promo && regP1 > 0 && p1 < regP1;
-
-        col1Html = isPromoActiveP1 
-          ? `<span style="text-decoration: line-through; color: var(--text-muted); font-size:11px; margin-right: 6px;">${formatCurrency(regP1)}</span><span style="font-weight: 700; color: var(--error);">${formatCurrency(p1)}</span>`
-          : `<span style="font-weight: 700; color: var(--text-primary);">${formatCurrency(p1)}</span>`;
-
-        col2Html = p2 > 0 ? `<span style="font-weight: 500;">${formatCurrency(p2)}</span>` : '<span style="color: var(--text-muted); font-size:12px;">-</span>';
-        col3Html = p5 > 0 ? `<span style="font-weight: 500;">${formatCurrency(p5)}</span>` : '<span style="color: var(--text-muted); font-size:12px;">-</span>';
-      } else if (currentTab === 'renew') {
-        const p1 = item.renewalByYear['1'] || item.renewPrice || 0;
-        const p2 = item.renewalByYear['2'] || 0;
-        const p5 = item.renewalByYear['5'] || 0;
-
-        col1Html = `<span style="font-weight: 700; color: var(--text-primary);">${formatCurrency(p1)}</span>`;
-        col2Html = p2 > 0 ? `<span style="font-weight: 500;">${formatCurrency(p2)}</span>` : '<span style="color: var(--text-muted); font-size:12px;">-</span>';
-        col3Html = p5 > 0 ? `<span style="font-weight: 500;">${formatCurrency(p5)}</span>` : '<span style="color: var(--text-muted); font-size:12px;">-</span>';
-      } else if (currentTab === 'transfer') {
-        const tf = item.transferPrice || 0;
-        col1Html = `<span style="font-weight: 700; color: var(--text-primary);">${formatCurrency(tf)}</span>`;
-        col2Html = `<span style="text-transform: uppercase; font-weight:600; font-size:12px; color: var(--text-secondary);">${item.currency || 'IDR'}</span>`;
-        col3Html = '<span style="color: var(--text-muted); font-size:12px;">-</span>';
-      } else if (currentTab === 'whois') {
-        const isId = item.extension.toLowerCase().endsWith('.id') || item.extension.toLowerCase().includes('.id.');
-        col1Html = isId 
-          ? `<span style="color: var(--text-secondary); font-weight: 500;">Tidak Didukung / Gratis</span>`
-          : `<span style="color: var(--success); font-weight: 600;">Didukung (Global)</span>`;
-        col2Html = item.whoisPrice > 0 
-          ? `<span style="font-weight: 700; color: var(--text-primary);">${formatCurrency(item.whoisPrice)}</span>`
-          : `<span style="color: var(--success); font-weight: 600;">GRATIS</span>`;
-        col3Html = '<span style="color: var(--text-muted); font-size:12px;">-</span>';
+      let regHtml = '';
+      if (isPromoActive) {
+        regHtml = `
+          <div style="display: flex; flex-direction: column; align-items: flex-end; line-height: 1.2;">
+            <span style="text-decoration: line-through; color: var(--text-muted); font-size: 11px;">${formatCurrency(promoRegPrice)}</span>
+            <span style="font-weight: 700; color: var(--text-primary);">${formatCurrency(regPrice)}</span>
+          </div>
+        `;
+      } else {
+        regHtml = `<span style="font-weight: 700; color: var(--text-primary);">${formatCurrency(regPrice)}</span>`;
       }
 
       tr.innerHTML = `
         <td style="padding: 16px 20px; vertical-align: middle;">${tldHtml}</td>
-        <td style="padding: 16px 20px; text-align: right; vertical-align: middle;">${col1Html}</td>
-        <td style="padding: 16px 20px; text-align: right; vertical-align: middle;">${col2Html}</td>
-        <td style="padding: 16px 20px; text-align: right; vertical-align: middle;">${col3Html}</td>
+        <td style="padding: 16px 20px; text-align: right; vertical-align: middle;">${regHtml}</td>
+        <td style="padding: 16px 20px; text-align: right; vertical-align: middle; font-weight: 500; color: var(--text-primary);">${formatCurrency(transferPrice)}</td>
+        <td style="padding: 16px 20px; text-align: right; vertical-align: middle; font-weight: 500; color: var(--text-primary);">${formatCurrency(renewPrice)}</td>
+        <td style="padding: 16px 20px; text-align: right; vertical-align: middle; font-weight: 500; color: var(--text-primary);">${formatCurrency(restorePrice)}</td>
         <td style="padding: 16px 20px; text-align: right; vertical-align: middle;">
           <span class="detail-link btn-details-action" data-tld="${item.extension}" style="cursor: pointer; color: var(--accent-primary); font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 6px; transition: background 0.2s;">
             Detail &rarr;
@@ -595,19 +493,8 @@ import Layout from '../layouts/Layout.astro';
     });
   });
 
-  // Tab switching handler
-  document.querySelectorAll('[data-tab-type]').forEach(tab => {
-    tab.addEventListener('click', (e) => {
-      document.querySelectorAll('[data-tab-type]').forEach(t => t.classList.remove('active'));
-      const target = e.target as HTMLButtonElement;
-      target.classList.add('active');
-      currentTab = target.dataset.tabType || 'register';
-      currentPage = 1;
-      renderTable();
-    });
-  });
-
   // Live Search handler
+  const searchInput = document.getElementById('tld-search-input') as HTMLInputElement;
   searchInput.addEventListener('input', (e) => {
     searchQuery = (e.target as HTMLInputElement).value.trim();
     currentPage = 1;
