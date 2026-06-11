@@ -42,6 +42,16 @@ const { title, description = `${appName} - Self-Service Customer Domain Portal` 
       const storedTheme = localStorage.getItem('theme');
       const initialTheme = storedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
       document.documentElement.setAttribute('data-theme', initialTheme);
+
+      // Turnstile Global Callback to prevent race conditions
+      window._turnstileSolved = false;
+      window.onTurnstileSuccess = function() {
+        window._turnstileSolved = true;
+        const btn1 = document.getElementById('step1-submit-btn');
+        if (btn1) btn1.disabled = false;
+        const btn2 = document.getElementById('submit-btn');
+        if (btn2) btn2.disabled = false;
+      };
     </script>
     
     {import.meta.env.PROD && import.meta.env.PUBLIC_TURNSTILE_SITE_KEY && (
