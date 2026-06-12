@@ -19,12 +19,12 @@ import Layout from '../layouts/Layout.astro';
 
       <div class="card" style="max-width: 700px; margin: 0 auto 40px; padding: 28px !important;">
         <form id="search-form">
-          <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-            <div style="position: relative; flex: 1; min-width: 250px;">
+          <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+            <div class="relative flex-1">
               <svg class="lucide lucide-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 15px; height: 15px; position: absolute; left: 14px; top: 14px; color: var(--text-secondary); pointer-events: none;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
               <input type="text" id="domain-search-input" class="form-control" placeholder="Ketik nama domain (misal: bisnissaya)..." required style="padding-left: 42px; height: 44px; font-size: 13.5px;" />
             </div>
-            <button type="submit" id="search-btn" class="btn btn-primary" style="height: 44px; font-weight: 600; padding: 0 24px;">
+            <button type="submit" id="search-btn" class="btn btn-primary w-full sm:w-auto" style="height: 44px; font-weight: 600; padding: 0 24px;">
               Cari Ketersediaan
             </button>
           </div>
@@ -447,10 +447,15 @@ import Layout from '../layouts/Layout.astro';
         // Render skeleton loaders
         searchExtensions.forEach(ext => {
           const skeleton = document.createElement('div');
-          skeleton.style.cssText = 'display:flex; align-items:center; justify-content:space-between; padding:8px 16px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-secondary); min-height:46px;';
+          skeleton.className = 'flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 border border-solid rounded-lg gap-3 w-full';
+          skeleton.style.borderColor = 'var(--border-color)';
+          skeleton.style.backgroundColor = 'var(--bg-secondary)';
           skeleton.innerHTML = `
-            <div style="height:12px; border-radius:4px; background:var(--border-color); width:120px; animation: pulse 1.5s infinite;"></div>
-            <div style="height:26px; width:70px; border-radius:4px; background:var(--border-color); animation: pulse 1.5s infinite;"></div>
+            <div style="display:flex; flex-direction:column; gap:8px; width:100%;">
+              <div style="height:14px; border-radius:4px; background:var(--border-color); width:140px; animation: pulse 1.5s ease-in-out infinite;"></div>
+              <div style="height:12px; border-radius:4px; background:var(--border-color); width:90px; animation: pulse 1.5s ease-in-out infinite;"></div>
+            </div>
+            <div style="height:32px; border-radius:8px; background:var(--border-color); animation: pulse 1.5s ease-in-out infinite;" class="w-full sm:w-[80px] self-stretch sm:self-center"></div>
           `;
           searchResultsList.appendChild(skeleton);
         });
@@ -492,7 +497,9 @@ import Layout from '../layouts/Layout.astro';
 
       const row = document.createElement('div');
       row.setAttribute('data-domain-row', domain.toLowerCase());
-      row.style.cssText = `display:flex; align-items:center; justify-content:space-between; padding:8px 16px; border:1px solid ${isExact ? 'var(--accent-primary)' : 'var(--border-color)'}; border-radius:8px; background: ${isExact ? 'var(--accent-light)' : 'var(--bg-secondary)'}; min-height:46px; font-size: 13px; gap: 8px;`;
+      row.className = 'flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 border border-solid rounded-lg gap-3 w-full transition-all duration-150';
+      row.style.borderColor = isExact ? 'var(--accent-primary)' : 'var(--border-color)';
+      row.style.backgroundColor = isExact ? 'var(--accent-light)' : 'var(--bg-secondary)';
 
       const firstDot = domain.indexOf('.');
       const ext = firstDot !== -1 ? domain.substring(firstDot) : '';
@@ -517,22 +524,24 @@ import Layout from '../layouts/Layout.astro';
       }
 
       row.innerHTML = `
-        <div style="display:flex; align-items:center; gap:8px;">
-          <strong style="font-family:monospace; font-size:13.5px;">${domain}</strong>
-          ${isExact ? '<span style="font-size:8.5px; background:var(--accent-primary); color:#fff; font-weight:800; text-transform:uppercase; padding:1.5px 5px; border-radius:3px; letter-spacing:0.5px;">Pilihan Anda</span>' : ''}
-          ${badgeHtml}
-        </div>
-        <div style="display:flex; align-items:center; gap:12px;">
-          <span style="font-weight:600; color: ${isAvailable ? '#16a34a' : 'var(--text-muted)'}; display:flex; align-items:center; gap:4px;">
+        <div class="flex flex-col gap-1.5 flex-1 min-w-0 w-full">
+          <div class="flex items-center gap-2 flex-wrap min-w-0">
+            <strong class="font-mono text-sm sm:text-base text-primary truncate">${domain}</strong>
+            ${isExact ? '<span class="bg-blue-600 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wide">Pilihan Anda</span>' : ''}
+            ${badgeHtml}
+          </div>
+          <div class="flex items-center text-xs sm:text-sm font-semibold ${isAvailable ? 'text-emerald-500' : 'text-gray-500'} flex-wrap gap-2">
             ${isAvailable 
-              ? '<svg class="lucide lucide-check" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="color:#16a34a;"><polyline points="20 6 9 17 4 12"/></svg> Tersedia'
-              : 'Terdaftar'
+              ? '<svg class="lucide lucide-check w-3.5 h-3.5 text-emerald-500 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> <span>Tersedia</span>'
+              : '<svg class="lucide lucide-x-circle w-3.5 h-3.5 text-gray-500 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg> <span>Terdaftar</span>'
             }
-          </span>
-          ${priceHtml ? `<span style="font-size:12px; padding-left:8px; border-left:1px solid var(--border-color); color:var(--text-secondary);">${priceHtml}</span>` : ''}
+            ${priceHtml ? `<span class="pl-2 border-l border-border-color text-muted font-medium text-xs">${priceHtml}</span>` : ''}
+          </div>
+        </div>
+        <div class="flex-shrink-0 w-full sm:w-auto text-right mt-1 sm:mt-0">
           ${isAvailable
-            ? `<a href="/checkout?domain=${encodeURIComponent(domain)}${isPremium ? '&is_premium=true' : ''}" class="btn btn-primary" style="height:28px; font-size:11px; padding: 0 12px; border-radius: 4px; line-height:1; display:inline-flex; align-items:center;">Daftarkan</a>`
-            : `<a href="/whois?domain=${encodeURIComponent(domain)}" target="_blank" class="btn btn-outline" style="height:28px; font-size:11px; padding: 0 12px; border-radius: 4px; line-height:1; display:inline-flex; align-items:center;">WHOIS</a>`
+            ? `<a href="/checkout?domain=${encodeURIComponent(domain)}${isPremium ? '&is_premium=true' : ''}" class="btn btn-primary text-xs py-1.5 px-4 rounded-lg font-semibold inline-flex items-center justify-center w-full sm:w-auto h-8 bg-blue-600 hover:bg-blue-700 text-white border-none transition-colors duration-150">Daftarkan</a>`
+            : `<a href="/whois?domain=${encodeURIComponent(domain)}" target="_blank" class="btn btn-secondary text-xs py-1.5 px-4 rounded-lg font-semibold inline-flex items-center justify-center w-full sm:w-auto h-8 bg-gray-700/50 hover:bg-gray-700 text-gray-400 border border-gray-600/30 transition-colors duration-150">WHOIS</a>`
           }
         </div>
       `;

@@ -1,9 +1,27 @@
 "use client";
 
 import React, { useEffect, useRef } from 'react';
-import Spline from '@splinetool/react-spline';
+
+// Lazy load Spline to prevent mobile browsers from importing/executing the heavy 3D engine code
+const Spline = React.lazy(() => import('@splinetool/react-spline'));
 
 export function HeroSplineBackground() {
+  const [isMobile, setIsMobile] = React.useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 768;
+    }
+    return false;
+  });
+
+  React.useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   return (
     <div style={{
       position: 'relative',
@@ -11,15 +29,30 @@ export function HeroSplineBackground() {
       height: '100vh',
       pointerEvents: 'auto',
       overflow: 'hidden',
+      backgroundColor: '#070913',
     }}>
-      <Spline
-        style={{
-          width: '100%',
-          height: '100vh',
-          pointerEvents: 'auto',
-        }}
-        scene="https://prod.spline.design/dJqTIQ-tE3ULUPMi/scene.splinecode"
-      />
+      {isMobile ? (
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          background: `
+            radial-gradient(circle at 20% 30%, rgba(37, 99, 235, 0.15) 0%, transparent 40%),
+            radial-gradient(circle at 80% 70%, rgba(79, 70, 229, 0.15) 0%, transparent 40%),
+            linear-gradient(135deg, #070913 0%, #0c0e25 100%)
+          `,
+        }} />
+      ) : (
+        <React.Suspense fallback={<div style={{ position: 'absolute', inset: 0, backgroundColor: '#070913' }} />}>
+          <Spline
+            style={{
+              width: '100%',
+              height: '100vh',
+              pointerEvents: 'auto',
+            }}
+            scene="https://prod.spline.design/dJqTIQ-tE3ULUPMi/scene.splinecode"
+          />
+        </React.Suspense>
+      )}
       <div
         style={{
           position: 'absolute',

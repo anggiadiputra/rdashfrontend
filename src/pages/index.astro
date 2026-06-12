@@ -37,12 +37,12 @@ import { HeroSplineBackground } from '../components/ui/3d-hero-section-boxes';
       </form>
 
       <!-- Results Showcase Grid (Dynamically updated by JS) -->
-      <div id="search-results-section" class="search-results-section hidden mt-4 text-left" style="width: 100%; max-width: 700px; padding: 24px !important; border-radius: 12px; border: 1px solid rgba(55,65,81,0.3); background: rgba(17, 24, 39, 0.95); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 12px;">
+      <div id="search-results-section" class="search-results-section hidden mt-4 text-left">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-3 mb-4 border-b border-white/10">
           <h3 class="results-heading" style="font-size: 15px; font-weight: 700; margin: 0; color: #ffffff;">Hasil Pencarian: <span id="target-query" class="text-accent" style="font-family: monospace;"></span></h3>
           
           <!-- Live Search Filter for Results -->
-          <div style="position: relative; display: flex; align-items: center; width: 200px; max-width: 100%;">
+          <div style="position: relative; display: flex; align-items: center; width: 200px; max-width: 100%;" class="w-full sm:w-[200px]">
             <svg class="lucide lucide-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 13px; height: 13px; position: absolute; left: 10px; color: #9ca3af; pointer-events: none;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <input type="text" id="homepage-results-filter" class="form-control-compact" placeholder="Saring ekstensi..." style="padding-left: 28px; height: 30px; font-size: 11.5px; width: 100%; border-radius: 6px; background: rgba(31, 41, 55, 0.8); border: 1px solid rgba(75, 85, 99, 0.5); color: #ffffff;" />
           </div>
@@ -161,13 +161,13 @@ import { HeroSplineBackground } from '../components/ui/3d-hero-section-boxes';
 
         extensionsCache.forEach(ext => {
           const skeletonDiv = document.createElement('div');
-          skeletonDiv.style.cssText = 'display:flex; align-items:center; justify-content:space-between; padding:8px 16px; border:1px solid rgba(75, 85, 99, 0.3); border-radius:8px; background: rgba(31, 41, 55, 0.3); gap: 8px; min-height: 48px;';
+          skeletonDiv.className = 'flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 border border-gray-700/20 rounded-xl bg-gray-800/30 gap-3 w-full';
           skeletonDiv.innerHTML = `
-            <div style="display:flex; align-items:center; gap:12px; width:70%;">
-              <div style="height:12px; border-radius:4px; background:rgba(75, 85, 99, 0.5); width:120px; animation: pulse 1.5s ease-in-out infinite;"></div>
-              <div style="height:10px; border-radius:4px; background:rgba(75, 85, 99, 0.3); width:80px; animation: pulse 1.5s ease-in-out infinite;"></div>
+            <div style="display:flex; flex-direction:column; gap:8px; width:100%;">
+              <div style="height:14px; border-radius:4px; background:rgba(75, 85, 99, 0.5); width:140px; animation: pulse 1.5s ease-in-out infinite;"></div>
+              <div style="height:12px; border-radius:4px; background:rgba(75, 85, 99, 0.3); width:90px; animation: pulse 1.5s ease-in-out infinite;"></div>
             </div>
-            <div style="height:28px; width:80px; border-radius:4px; background:rgba(75, 85, 99, 0.5); animation: pulse 1.5s ease-in-out infinite;"></div>
+            <div style="height:32px; border-radius:8px; background:rgba(75, 85, 99, 0.5); animation: pulse 1.5s ease-in-out infinite;" class="w-full sm:w-[80px] self-stretch sm:self-center"></div>
           `;
           resultsContainer.appendChild(skeletonDiv);
         });
@@ -211,15 +211,15 @@ import { HeroSplineBackground } from '../components/ui/3d-hero-section-boxes';
 
       const card = document.createElement('div');
       card.setAttribute('data-domain-row', domain.toLowerCase());
-      card.className = 'flex items-center justify-between flex-wrap gap-2';
+      
       if (isExactMatch) {
-        card.style.cssText = 'padding: 8px 16px; background-color: rgba(37, 99, 235, 0.12); border: 1.5px solid var(--accent-primary, #2563eb); border-radius: 8px; color: #ffffff; min-height: 48px; transition: all 0.15s ease; gap: 8px; box-shadow: 0 0 15px rgba(37, 99, 235, 0.2); width: 100%;';
+        card.className = 'flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 bg-blue-500/10 border-2 border-blue-600 rounded-xl gap-3 w-full transition-all duration-150 shadow-[0_0_15px_rgba(37,99,235,0.15)]';
       } else {
-        card.style.cssText = 'padding: 8px 16px; background-color: rgba(31, 41, 55, 0.5); border: 1px solid rgba(75, 85, 99, 0.3); border-radius: 8px; color: #ffffff; min-height: 48px; transition: all 0.15s ease; gap: 8px; width: 100%;';
+        card.className = 'flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 bg-gray-800/40 border border-gray-700/30 rounded-xl gap-3 w-full transition-all duration-150';
       }
 
       const textCol = document.createElement('div');
-      textCol.style.cssText = 'display: flex; align-items: center; justify-content: space-between; flex: 1; flex-wrap: wrap; gap: 8px; min-width: 240px;';
+      textCol.className = 'flex flex-col gap-1.5 flex-1 min-w-0';
       
       const firstDot = domain.indexOf('.');
       const ext = firstDot !== -1 ? domain.substring(firstDot) : '';
@@ -231,51 +231,51 @@ import { HeroSplineBackground } from '../components/ui/3d-hero-section-boxes';
 
       let priceHtml = '';
       if (isPremium && item.premium_price > 0) {
-        priceHtml = `<span style="font-size: 11.5px; font-weight: 700; color: #facc15;">Rp ${item.premium_price.toLocaleString('id-ID')}/thn</span>`;
+        priceHtml = `Rp ${item.premium_price.toLocaleString('id-ID')}`;
       } else if (registerPrice1yr > 0) {
         if (isPromo && regularPrice1yr > 0 && registerPrice1yr < regularPrice1yr) {
-          priceHtml = `<span style="text-decoration:line-through; color:#9ca3af; font-size:10.5px; margin-right:4px;">Rp ${regularPrice1yr.toLocaleString('id-ID')}</span><span style="color:#f87171; font-weight:700; font-size:11.5px;">Rp ${registerPrice1yr.toLocaleString('id-ID')}/thn</span>`;
+          priceHtml = `<span style="text-decoration:line-through; color:#9ca3af; font-size:10.5px; margin-right:4px;">Rp ${regularPrice1yr.toLocaleString('id-ID')}</span><span style="color:#f87171; font-weight:700;">Rp ${registerPrice1yr.toLocaleString('id-ID')}</span>`;
         } else {
-          priceHtml = `<span style="font-size: 11.5px; font-weight: 600; color: #9ca3af;">Rp ${registerPrice1yr.toLocaleString('id-ID')}/thn</span>`;
+          priceHtml = `Rp ${registerPrice1yr.toLocaleString('id-ID')}`;
         }
       }
 
       let promoBadge = '';
       if (isPremium) {
-        promoBadge = `<span style="background: rgba(234, 179, 8, 0.2); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.4); font-size: 9px; font-weight: 800; padding: 1.5px 6px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.5px;">PREMIUM</span>`;
+        promoBadge = `<span class="bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 text-[9px] font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wide">PREMIUM</span>`;
       } else if (isPromo && regularPrice1yr > 0 && registerPrice1yr < regularPrice1yr) {
-        promoBadge = `<span style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.5px;">PROMO</span>`;
+        promoBadge = `<span class="bg-red-500/15 text-red-400 border border-red-500/20 text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wide">PROMO</span>`;
       }
 
       let exactBadge = isExactMatch 
-        ? `<span style="background: var(--accent-primary, #2563eb); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.25); font-size: 8.5px; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px; margin-right: 4px;">Pilihan Anda</span>`
+        ? `<span class="bg-blue-600 text-white border border-white/10 text-[9px] font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wide">Pilihan Anda</span>`
         : ``;
 
       textCol.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <span class="result-name" style="font-family: monospace; font-weight: 700; font-size: 13.5px; color: #ffffff;">${domain}</span>
+        <div class="flex items-center gap-2 flex-wrap min-w-0">
+          <span class="result-name font-mono font-bold text-sm sm:text-base text-white truncate">${domain}</span>
           ${exactBadge}
           ${promoBadge}
         </div>
-        <div style="display: flex; align-items: center; font-size: 12px; font-weight: 600; color: ${isAvailable ? '#10b981' : '#9ca3af'}; flex-wrap: wrap;">
+        <div class="flex items-center text-xs sm:text-sm font-semibold ${isAvailable ? 'text-emerald-400' : 'text-gray-400'} flex-wrap gap-2">
           ${isAvailable 
-            ? `<svg class="lucide lucide-check" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; flex-shrink:0; color: #10b981;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-               <span style="color:#10b981; font-weight: 700; margin-right: 4px;">Tersedia</span>` 
-            : `<svg class="lucide lucide-x-circle" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; flex-shrink:0; color: #9ca3af;"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
-               <span style="color:#9ca3af; margin-right: 4px;">Terdaftar</span>`
+            ? `<svg class="lucide lucide-check w-3.5 h-3.5 mr-1 text-emerald-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+               <span>Tersedia</span>` 
+            : `<svg class="lucide lucide-x-circle w-3.5 h-3.5 mr-1 text-gray-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+               <span>Terdaftar</span>`
           }
-          ${priceHtml ? `<span style="font-weight:500; padding-left:8px; border-left:1px solid rgba(255,255,255,0.15); display:inline-flex; align-items:center; gap:4px; margin-left:4px;">${priceHtml}</span>` : ''}
+          ${priceHtml ? `<span class="pl-2 border-l border-gray-700 text-gray-400 font-medium text-xs">${priceHtml}</span>` : ''}
         </div>
       `;
 
       const actionCol = document.createElement('div');
-      actionCol.style.cssText = 'flex-shrink: 0;';
+      actionCol.className = 'flex-shrink-0 w-full sm:w-auto text-right mt-1 sm:mt-0';
       
       if (isAvailable) {
         const targetUrl = `/checkout?domain=${encodeURIComponent(domain)}${isPremium ? '&is_premium=true' : ''}`;
-        actionCol.innerHTML = `<a href="${targetUrl}" class="btn btn-primary btn-sm-custom" style="height: 28px; padding: 0 12px; font-size: 11.5px; border-radius: 4px; font-weight: 600; line-height: 1; display: inline-flex; align-items: center; background: var(--accent-primary); border: none; color: #ffffff;">Daftarkan</a>`;
+        actionCol.innerHTML = `<a href="${targetUrl}" class="btn btn-primary text-xs py-1.5 px-4 rounded-lg font-semibold inline-flex items-center justify-center w-full sm:w-auto h-8 bg-blue-600 hover:bg-blue-700 text-white border-none transition-colors duration-150">Daftarkan</a>`;
       } else {
-        actionCol.innerHTML = `<a href="/whois?domain=${encodeURIComponent(domain)}" class="btn btn-secondary btn-sm-custom" target="_blank" style="height: 28px; padding: 0 12px; font-size: 11.5px; border-radius: 4px; font-weight: 600; line-height: 1; display: inline-flex; align-items: center; background: rgba(55, 65, 81, 0.5); border-color: rgba(75, 85, 99, 0.4); color: #9ca3af;">WHOIS</a>`;
+        actionCol.innerHTML = `<a href="/whois?domain=${encodeURIComponent(domain)}" class="btn btn-secondary text-xs py-1.5 px-4 rounded-lg font-semibold inline-flex items-center justify-center w-full sm:w-auto h-8 bg-gray-700/50 hover:bg-gray-700 text-gray-400 border border-gray-600/30 transition-colors duration-150" target="_blank">WHOIS</a>`;
       }
 
       card.appendChild(textCol);
@@ -314,7 +314,7 @@ import { HeroSplineBackground } from '../components/ui/3d-hero-section-boxes';
       sortedMock.forEach((item) => {
         const domain = name + item.tld;
         const isExactMatch = domain.toLowerCase() === query.toLowerCase();
-        renderHomepageResultRow(domain, item.available, isExactMatch);
+        renderHomepageResultRow({ domain, status: item.available ? 'available' : 'registered' }, isExactMatch);
       });
     }
 
@@ -427,6 +427,17 @@ import { HeroSplineBackground } from '../components/ui/3d-hero-section-boxes';
       flex: 1;
       height: 3.25rem;
       font-size: 1.05rem;
+      background-color: rgba(31, 41, 55, 0.6) !important;
+      color: #ffffff !important;
+      border: 1px solid rgba(75, 85, 99, 0.5) !important;
+    }
+    .search-input:focus {
+      background-color: rgba(31, 41, 55, 0.8) !important;
+      border-color: #3b82f6 !important;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3) !important;
+    }
+    .search-input::placeholder {
+      color: #9ca3af !important;
     }
 
     .btn-search {
@@ -441,11 +452,16 @@ import { HeroSplineBackground } from '../components/ui/3d-hero-section-boxes';
       max-width: 700px;
       text-align: left;
       background-color: rgba(17, 24, 39, 0.95);
-      border: 1px solid rgba(55, 65, 81, 0.8);
-      border-radius: var(--radius-lg);
-      padding: 1.5rem;
+      border: 1px solid rgba(55, 65, 81, 0.3);
+      border-radius: 12px;
+      padding: 1rem;
       margin-top: 1.5rem;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+    @media (min-width: 640px) {
+      .search-results-section {
+        padding: 1.5rem;
+      }
     }
 
     .results-heading {
