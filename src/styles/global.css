@@ -57,6 +57,10 @@ body[data-theme="light"] {
   --text-secondary: #475569;
   --text-muted: #94a3b8;
   
+  --accent-primary: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-light: #eff6ff;
+  
   --border-color: #e2e8f0;
   --border-focus: #3b82f6;
   
