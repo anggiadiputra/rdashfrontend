@@ -368,12 +368,12 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
       }
 
       tr.innerHTML = `
-        <td style="padding: 16px 20px; vertical-align: middle;">${tldHtml}</td>
-        <td style="padding: 16px 20px; text-align: right; vertical-align: middle;">${regHtml}</td>
-        <td style="padding: 16px 20px; text-align: right; vertical-align: middle; font-weight: 500; color: var(--text-primary);">${formatCurrency(transferPrice)}</td>
-        <td style="padding: 16px 20px; text-align: right; vertical-align: middle; font-weight: 500; color: var(--text-primary);">${formatCurrency(renewPrice)}</td>
-        <td style="padding: 16px 20px; text-align: right; vertical-align: middle; font-weight: 500; color: var(--text-primary);">${formatCurrency(restorePrice)}</td>
-        <td style="padding: 16px 20px; text-align: right; vertical-align: middle;">
+        <td data-label="Extension" style="padding: 16px 20px; vertical-align: middle;">${tldHtml}</td>
+        <td data-label="Registration" style="padding: 16px 20px; text-align: right; vertical-align: middle;">${regHtml}</td>
+        <td data-label="Transfer" style="padding: 16px 20px; text-align: right; vertical-align: middle; font-weight: 500; color: var(--text-primary);">${formatCurrency(transferPrice)}</td>
+        <td data-label="Renewal" style="padding: 16px 20px; text-align: right; vertical-align: middle; font-weight: 500; color: var(--text-primary);">${formatCurrency(renewPrice)}</td>
+        <td data-label="Restore" style="padding: 16px 20px; text-align: right; vertical-align: middle; font-weight: 500; color: var(--text-primary);">${formatCurrency(restorePrice)}</td>
+        <td data-label="Aksi" style="padding: 16px 20px; text-align: right; vertical-align: middle;">
           <span class="detail-link btn-details-action" data-tld="${item.extension}" style="cursor: pointer; color: var(--accent-primary); font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 6px; transition: background 0.2s;">
             Detail &rarr;
           </span>
@@ -495,11 +495,26 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
 
   // Live Search handler
   const searchInput = document.getElementById('tld-search-input') as HTMLInputElement;
-  searchInput.addEventListener('input', (e) => {
+  
+  function debounce(func: Function, wait: number) {
+    let timeout: ReturnType<typeof setTimeout> | null;
+    return function executedFunction(...args: any[]) {
+      const later = () => {
+        timeout = null;
+        func(...args);
+      };
+      if (timeout) clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  }
+
+  const handleSearch = debounce((e: Event) => {
     searchQuery = (e.target as HTMLInputElement).value.trim();
     currentPage = 1;
     renderTable();
-  });
+  }, 300);
+
+  searchInput.addEventListener('input', handleSearch);
 
   // Pagination buttons
   prevPageBtn?.addEventListener('click', () => {
@@ -664,6 +679,18 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
     display: none !important;
   }
 
+  /* Responsive Table Container */
+  .table-scroll {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Prevent table cells from wrapping and squishing on mobile */
+  .table th, .table td {
+    white-space: nowrap;
+  }
+
   .pagination-bar {
     display: flex;
     justify-content: space-between;
@@ -692,5 +719,77 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
   .btn-pagination:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+</style>
+
+<style is:global>
+  /* Prevent table cells from wrapping and squishing on mobile */
+  #prices-table-wrap .table th, 
+  #prices-table-wrap .table td {
+    white-space: nowrap;
+  }
+
+  /* Mobile Card View for Prices Table */
+  @media (max-width: 768px) {
+    #prices-table-wrap {
+      overflow-x: hidden !important; /* Disable horizontal scroll for cards */
+      padding: 16px;
+    }
+
+    #prices-table-wrap .table, 
+    #prices-table-wrap .table tbody, 
+    #prices-table-wrap .table tr, 
+    #prices-table-wrap .table td {
+      display: block;
+      width: 100%;
+      white-space: normal !important;
+    }
+
+    /* Hide table header */
+    #prices-table-wrap .table thead {
+      display: none;
+    }
+
+    /* Style each row as a card */
+    #prices-table-wrap .table tr {
+      margin-bottom: 16px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Style each cell */
+    #prices-table-wrap .table td {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0 !important;
+      text-align: right !important;
+      border-bottom: 1px dashed var(--border-color);
+    }
+
+    #prices-table-wrap .table td:last-child {
+      border-bottom: none;
+      padding-bottom: 0 !important;
+      margin-top: 8px;
+    }
+
+    /* Add Label before value */
+    #prices-table-wrap .table td::before {
+      content: attr(data-label);
+      font-weight: 600;
+      color: var(--text-secondary);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-right: auto;
+    }
+    
+    /* Fix align-items for promo prices */
+    #prices-table-wrap .table td > div {
+      text-align: right;
+    }
   }
 </style>
