@@ -1,0 +1,10 @@
+---
+import Layout from '../layouts/Layout.astro';
+import AetherFlowHero from '../components/ui/aether-flow-hero.tsx';
+---
+
+<Layout title="Demo Aether Flow Hero">
+  <main class="App bg-black min-h-screen relative">
+    <AetherFlowHero client:only="react" />
+  </main>
+</Layout>

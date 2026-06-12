@@ -4,6 +4,7 @@ import '../styles/global.css';
 interface Props {
   title: string;
   description?: string;
+  transparentNav?: boolean;
 }
 
 const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
@@ -22,7 +23,7 @@ try {
 }
 
 const logoUrl = appLogo ? `${apiUrl}${appLogo}` : '';
-const { title, description = `${appName} - Self-Service Customer Domain Portal` } = Astro.props;
+const { title, description = `${appName} - Self-Service Customer Domain Portal`, transparentNav = false } = Astro.props;
 ---
 
 
@@ -34,15 +35,20 @@ const { title, description = `${appName} - Self-Service Customer Domain Portal` 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
     
+    <!-- Preconnects for Performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    {import.meta.env.PROD && import.meta.env.PUBLIC_TURNSTILE_SITE_KEY && (
+      <link rel="preconnect" href="https://challenges.cloudflare.com" />
+    )}
+    
+    <!-- Fast Font Loading -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    
     <title>{title} | {appName}</title>
     <meta name="description" content={description} />
     
-    <!-- Immediate theme set script to prevent layout flashes -->
     <script is:inline>
-      const storedTheme = localStorage.getItem('theme');
-      const initialTheme = storedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-      document.documentElement.setAttribute('data-theme', initialTheme);
-
       // Turnstile Global Callback to prevent race conditions
       window._turnstileSolved = false;
       window.onTurnstileSuccess = function() {
@@ -59,7 +65,7 @@ const { title, description = `${appName} - Self-Service Customer Domain Portal` 
     )}
 
   </head>
-  <body>
+  <body data-transparent-nav={transparentNav ? '' : undefined}>
     <!-- 1. Header Navigation -->
     <header class="main-header">
       <div class="container header-container" style="position: relative;">
@@ -105,24 +111,7 @@ const { title, description = `${appName} - Self-Service Customer Domain Portal` 
             Daftar Harga
           </a>
 
-          <!-- Theme Toggle Button -->
-          <button id="theme-toggle-btn" class="theme-toggle-btn" aria-label="Toggle tema gelap/terang">
-            <svg id="sun-icon" class="lucide lucide-sun theme-icon hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="5"></circle>
-              <line x1="12" y1="1" x2="12" y2="3"></line>
-              <line x1="12" y1="21" x2="12" y2="23"></line>
-              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-              <line x1="1" y1="12" x2="3" y2="12"></line>
-              <line x1="21" y1="12" x2="23" y2="12"></line>
-              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-            </svg>
-            <svg id="moon-icon" class="lucide lucide-moon theme-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-            </svg>
-          </button>
-          
+
           <!-- Profile Dropdown Container -->
           <div class="profile-dropdown-container" style="position: relative;">
             <button id="profile-dropdown-trigger" class="profile-trigger-btn" aria-label="Menu pengguna">
@@ -216,7 +205,7 @@ const { title, description = `${appName} - Self-Service Customer Domain Portal` 
     </main>
 
     <!-- 3. Footer Section -->
-    <footer class="main-footer">
+    <footer class="main-footer" style="content-visibility: auto; contain-intrinsic-size: auto 300px;">
       <div class="container footer-container">
         <div class="footer-brand">
           <a href="/" class="logo">
@@ -260,39 +249,6 @@ const { title, description = `${appName} - Self-Service Customer Domain Portal` 
 
     <!-- 4. Client-side Navigation Sync & Theme Switcher Script -->
     <script>
-      // Theme toggler logic
-      const themeToggleBtn = document.getElementById('theme-toggle-btn');
-      const sunIcon = document.getElementById('sun-icon');
-      const moonIcon = document.getElementById('moon-icon');
-
-      function getInitialTheme() {
-        const storedTheme = localStorage.getItem('theme');
-        if (storedTheme) return storedTheme;
-        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      }
-
-      function setTheme(theme: string) {
-        document.documentElement.setAttribute('data-theme', theme);
-        localStorage.setItem('theme', theme);
-
-        if (theme === 'dark') {
-          sunIcon?.classList.remove('hidden');
-          moonIcon?.classList.add('hidden');
-        } else {
-          sunIcon?.classList.add('hidden');
-          moonIcon?.classList.remove('hidden');
-        }
-      }
-
-      // Initialize Theme
-      const currentTheme = getInitialTheme();
-      setTheme(currentTheme);
-
-      themeToggleBtn?.addEventListener('click', () => {
-        const newTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-        setTheme(newTheme);
-      });
-
       // Function to check auth status and sync navbar
       function syncNavigation() {
         const token = localStorage.getItem('token');
@@ -398,6 +354,36 @@ const { title, description = `${appName} - Self-Service Customer Domain Portal` 
           }
         }
       });
+
+      // ── Transparent Navbar Logic ──
+      // CSS already handles the transparent state immediately via body[data-transparent-nav] selector.
+      // JS only handles the scroll → glassmorphic transition.
+      const mainHeader = document.querySelector('.main-header') as HTMLElement;
+      const isTransparentNav = document.body.hasAttribute('data-transparent-nav');
+
+      if (isTransparentNav && mainHeader) {
+        // Enable smooth transitions now that JS has initialised (prevents load flash)
+        requestAnimationFrame(() => {
+          mainHeader.classList.add('nav-ready');
+        });
+
+        const handleScroll = () => {
+          const scrolled = window.scrollY > 60;
+          if (scrolled) {
+            mainHeader.classList.add('is-scrolled');
+          } else {
+            mainHeader.classList.remove('is-scrolled');
+          }
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        handleScroll();
+      } else if (mainHeader) {
+        // Non-transparent pages: enable transitions immediately
+        requestAnimationFrame(() => {
+          mainHeader.classList.add('nav-ready');
+        });
+      }
     </script>
 
     <style>
@@ -410,6 +396,87 @@ const { title, description = `${appName} - Self-Service Customer Domain Portal` 
         z-index: 50;
         padding-top: 1rem;
         padding-bottom: 1rem;
+        /* Transition disabled initially; enabled after JS sets nav-ready to prevent flash */
+        transition: none;
+      }
+
+      /* Enable smooth transitions only after JS initialises */
+      .main-header.nav-ready {
+        transition: background-color 0.4s ease, border-color 0.4s ease, backdrop-filter 0.4s ease, box-shadow 0.4s ease;
+      }
+
+      /* ── ZERO-FLASH: Apply transparent styles via CSS immediately ──
+         Body gets data-transparent-nav BEFORE first paint (inline script),
+         so this CSS rule fires before any JavaScript runs. */
+      body[data-transparent-nav] .main-header {
+        background-color: transparent !important;
+        border-bottom-color: transparent !important;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        box-shadow: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+      }
+
+      /* White text for links when on dark hero (transparent nav) */
+      body[data-transparent-nav] .main-header:not(.is-scrolled) .logo,
+      body[data-transparent-nav] .main-header:not(.is-scrolled) .logo-accent,
+      body[data-transparent-nav] .main-header:not(.is-scrolled) .nav-item {
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      body[data-transparent-nav] .main-header:not(.is-scrolled) .nav-item:hover {
+        color: #ffffff;
+      }
+
+      body[data-transparent-nav] .main-header:not(.is-scrolled) .logo-accent {
+        color: hsl(255deg 100% 83%);
+      }
+
+      body[data-transparent-nav] .main-header:not(.is-scrolled) .profile-trigger-btn {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.15);
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      body[data-transparent-nav] .main-header:not(.is-scrolled) .profile-trigger-btn:hover {
+        background: rgba(255, 255, 255, 0.14);
+        border-color: rgba(255, 255, 255, 0.25);
+      }
+
+      /* Scrolled state: becomes glassmorphic solid */
+      .main-header.is-scrolled {
+        background-color: rgba(7, 9, 19, 0.88) !important;
+        border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+        backdrop-filter: blur(20px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+      }
+
+      /* Scrolled transparent state colors */
+      .main-header.is-scrolled .logo,
+      .main-header.is-scrolled .nav-item {
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      .main-header.is-scrolled .logo-accent {
+        color: hsl(255deg 100% 83%);
+      }
+
+      .main-header.is-scrolled .nav-item:hover {
+        color: #ffffff;
+      }
+
+      .main-header.is-scrolled .profile-trigger-btn {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.15);
+        color: rgba(255, 255, 255, 0.9);
       }
 
       .header-container {
@@ -451,24 +518,6 @@ const { title, description = `${appName} - Self-Service Customer Domain Portal` 
         display: flex;
         align-items: center;
         gap: 1.5rem;
-      }
-
-      .theme-toggle-btn {
-        background: none;
-        border: none;
-        color: var(--text-secondary);
-        cursor: pointer;
-        padding: 0.5rem;
-        border-radius: var(--radius-sm);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: var(--transition-smooth);
-      }
-
-      .theme-toggle-btn:hover {
-        background-color: var(--bg-tertiary);
-        color: var(--text-primary);
       }
 
       /* Profile Dropdown Navigation Styling */
@@ -586,12 +635,6 @@ const { title, description = `${appName} - Self-Service Customer Domain Portal` 
       .nav-dropdown-item.text-danger:hover {
         background-color: var(--error-bg);
         color: var(--error);
-      }
-
-      .theme-icon {
-        width: 20px;
-        height: 20px;
-        stroke: currentColor;
       }
 
       .nav-group {
@@ -811,6 +854,50 @@ const { title, description = `${appName} - Self-Service Customer Domain Portal` 
         .nav-dropdown-item:hover {
           background-color: transparent !important;
           color: var(--text-primary) !important;
+        }
+
+        /* Mobile Side-by-side Auth Buttons */
+        #dropdown-links-guest {
+          display: flex !important;
+          flex-direction: row !important;
+          justify-content: space-between !important;
+          gap: 0.75rem !important;
+          margin-top: 1rem !important;
+          margin-bottom: 0.5rem !important;
+        }
+
+        #dropdown-links-guest .nav-dropdown-item {
+          flex: 1 !important;
+          justify-content: center !important;
+          padding: 0.6rem 0 !important;
+          border-radius: var(--radius-sm) !important;
+          color: #ffffff !important;
+          font-weight: 700 !important;
+          font-size: 0.85rem !important;
+          text-align: center !important;
+          transition: all 0.2s ease !important;
+        }
+
+        #dropdown-links-guest .nav-dropdown-item svg {
+          display: none !important;
+        }
+
+        /* Masuk (Merah) */
+        #dropdown-links-guest .nav-dropdown-item:nth-child(1) {
+          background-color: #dc2626 !important;
+          border: 1px solid #b91c1c !important;
+          box-shadow: none !important;
+        }
+
+        /* Daftar Akun (Biru) */
+        #dropdown-links-guest .nav-dropdown-item:nth-child(2) {
+          background-color: #2563eb !important;
+          border: 1px solid #1d4ed8 !important;
+          box-shadow: none !important;
+        }
+
+        #dropdown-links-guest .nav-dropdown-item:active {
+          transform: scale(0.96) !important;
         }
       }
 

@@ -497,54 +497,122 @@ import Layout from '../layouts/Layout.astro';
 
       const row = document.createElement('div');
       row.setAttribute('data-domain-row', domain.toLowerCase());
-      row.className = 'flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 border border-solid rounded-lg gap-3 w-full transition-all duration-150';
+      row.className = 'animate-fade-in-up flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-5 border border-solid rounded-2xl gap-4 w-full transition-all duration-300';
       row.style.borderColor = isExact ? 'var(--accent-primary)' : 'var(--border-color)';
       row.style.backgroundColor = isExact ? 'var(--accent-light)' : 'var(--bg-secondary)';
+      if (isExact) {
+        row.style.boxShadow = 'var(--shadow-md)';
+      }
 
       const firstDot = domain.indexOf('.');
-      const ext = firstDot !== -1 ? domain.substring(firstDot) : '';
-      const pricing = pricesCache.find(p => p.extension === ext);
+      const domainNamePart = firstDot !== -1 ? domain.substring(0, firstDot) : domain;
+      const domainExtPart = firstDot !== -1 ? domain.substring(firstDot) : '';
+      const pricing = pricesCache.find(p => p.extension === domainExtPart);
       
       let priceHtml = '';
       if (isPremium && item.premium_price > 0) {
-        priceHtml = `<span style="color:#facc15; font-weight:700;">Rp ${item.premium_price.toLocaleString('id-ID')}</span>`;
+        priceHtml = `<span class="text-amber-500 dark:text-amber-400 font-extrabold">Rp ${item.premium_price.toLocaleString('id-ID')}</span>`;
       } else if (pricing) {
         if (pricing.promo && pricing.regularRegisterPrice > pricing.registerPrice) {
-          priceHtml = `<span style="text-decoration:line-through; color:var(--text-muted); font-size:10.5px; margin-right:4px;">Rp ${pricing.regularRegisterPrice.toLocaleString('id-ID')}</span><span style="color:#ef4444; font-weight:700;">Rp ${pricing.registerPrice.toLocaleString('id-ID')}</span>`;
+          priceHtml = `<span style="text-decoration:line-through;" class="text-muted text-xs mr-2 font-normal">Rp ${pricing.regularRegisterPrice.toLocaleString('id-ID')}</span><span class="text-success font-extrabold">Rp ${pricing.registerPrice.toLocaleString('id-ID')}</span>`;
         } else {
-          priceHtml = `Rp ${pricing.registerPrice.toLocaleString('id-ID')}`;
+          priceHtml = `<span class="text-primary font-bold">Rp ${pricing.registerPrice.toLocaleString('id-ID')}</span>`;
         }
       }
 
       let badgeHtml = '';
       if (isPremium) {
-        badgeHtml = `<span style="font-size:8.5px; background:rgba(234,179,8,0.2); color:#facc15; border:1px solid rgba(234,179,8,0.4); font-weight:800; text-transform:uppercase; padding:1.5px 5px; border-radius:3px; letter-spacing:0.5px;">PREMIUM</span>`;
+        badgeHtml = `<span class="bg-amber-500/10 text-amber-600 dark:text-amber-300 border border-amber-500/20 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider">PREMIUM</span>`;
       } else if (pricing?.promo && pricing.regularRegisterPrice > pricing.registerPrice) {
-        badgeHtml = `<span style="font-size:8.5px; background:rgba(239,68,68,0.1); color:#ef4444; border:1px solid rgba(239,68,68,0.2); font-weight:800; text-transform:uppercase; padding:1.5px 5px; border-radius:3px; letter-spacing:0.5px;">PROMO</span>`;
+        badgeHtml = `<span class="bg-success-bg text-success border border-success/20 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider">PROMO</span>`;
+      }
+
+      let statusHtml = '';
+      if (isAvailable) {
+        statusHtml = `
+          <span class="inline-flex items-center text-xs text-success font-bold bg-success-bg px-3 py-1 rounded-full border border-success/20 shadow-sm gap-2">
+            <span class="relative flex h-2 w-2">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
+            </span>
+            Tersedia
+          </span>
+        `;
+      } else {
+        statusHtml = `
+          <span class="inline-flex items-center text-xs text-muted font-semibold bg-bg-tertiary px-3 py-1 rounded-full border border-border-color shadow-sm gap-1.5">
+            <svg class="w-3.5 h-3.5 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            Terdaftar
+          </span>
+        `;
+      }
+
+      let buttonHtml = '';
+      if (isAvailable) {
+        const targetUrl = `/checkout?domain=${encodeURIComponent(domain)}${isPremium ? '&is_premium=true' : ''}`;
+        buttonHtml = `
+          <a href="${targetUrl}" style="color: #ffffff !important;" class="group inline-flex items-center justify-center gap-1.5 px-5 py-2 text-xs font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 border-none rounded-xl transition-all duration-200 active:scale-95 shadow-[0_4px_12px_rgba(37,99,235,0.2)] hover:shadow-[0_4px_16px_rgba(37,99,235,0.35)] h-9 w-full sm:w-auto">
+            <span style="color: #ffffff !important;">Daftarkan</span>
+            <svg class="w-3.5 h-3.5 transform transition-transform group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </a>
+        `;
+      } else {
+        buttonHtml = `
+          <a href="/whois?domain=${encodeURIComponent(domain)}" target="_blank" style="color: var(--text-primary) !important;" class="inline-flex items-center justify-center gap-1.5 px-5 py-2 text-xs font-semibold text-secondary bg-bg-tertiary hover:bg-bg-secondary border border-border-color hover:border-border-focus rounded-xl transition-all duration-200 active:scale-95 h-9 w-full sm:w-auto">
+            <span style="color: var(--text-primary) !important;">WHOIS</span>
+            <svg class="w-3.5 h-3.5 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </a>
+        `;
       }
 
       row.innerHTML = `
-        <div class="flex flex-col gap-1.5 flex-1 min-w-0 w-full">
-          <div class="flex items-center gap-2 flex-wrap min-w-0">
-            <strong class="font-mono text-sm sm:text-base text-primary truncate">${domain}</strong>
-            ${isExact ? '<span class="bg-blue-600 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wide">Pilihan Anda</span>' : ''}
-            ${badgeHtml}
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between w-full gap-4">
+          <!-- Left Column: Domain Info & Status/Price -->
+          <div class="flex-1 min-w-0 flex flex-col gap-2">
+            <!-- Domain Name & Badges -->
+            <div class="flex items-center gap-2 flex-wrap min-w-0">
+              <span class="result-name font-extrabold text-[15px] sm:text-[17px] text-primary tracking-tight truncate">
+                ${domainNamePart}<span class="text-muted font-semibold">${domainExtPart}</span>
+              </span>
+              ${isExact ? '<span class="bg-accent-light text-accent-primary border border-accent-primary/20 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider">Pilihan Anda</span>' : ''}
+              ${badgeHtml}
+            </div>
+            <!-- Status & Price Inline Group -->
+            <div class="flex items-center gap-3 text-xs flex-wrap">
+              ${statusHtml}
+              ${priceHtml ? `
+                <span class="w-[1px] h-3 bg-border-color"></span>
+                <span class="text-secondary font-semibold flex items-center">${priceHtml}</span>
+              ` : ''}
+            </div>
           </div>
-          <div class="flex items-center text-xs sm:text-sm font-semibold ${isAvailable ? 'text-emerald-500' : 'text-gray-500'} flex-wrap gap-2">
-            ${isAvailable 
-              ? '<svg class="lucide lucide-check w-3.5 h-3.5 text-emerald-500 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> <span>Tersedia</span>'
-              : '<svg class="lucide lucide-x-circle w-3.5 h-3.5 text-gray-500 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg> <span>Terdaftar</span>'
-            }
-            ${priceHtml ? `<span class="pl-2 border-l border-border-color text-muted font-medium text-xs">${priceHtml}</span>` : ''}
+          
+          <!-- Right Column: Action Button -->
+          <div class="flex-shrink-0 w-full sm:w-auto mt-1 sm:mt-0 flex justify-end">
+            ${buttonHtml}
           </div>
-        </div>
-        <div class="flex-shrink-0 w-full sm:w-auto text-right mt-1 sm:mt-0">
-          ${isAvailable
-            ? `<a href="/checkout?domain=${encodeURIComponent(domain)}${isPremium ? '&is_premium=true' : ''}" class="btn btn-primary text-xs py-1.5 px-4 rounded-lg font-semibold inline-flex items-center justify-center w-full sm:w-auto h-8 bg-blue-600 hover:bg-blue-700 text-white border-none transition-colors duration-150">Daftarkan</a>`
-            : `<a href="/whois?domain=${encodeURIComponent(domain)}" target="_blank" class="btn btn-secondary text-xs py-1.5 px-4 rounded-lg font-semibold inline-flex items-center justify-center w-full sm:w-auto h-8 bg-gray-700/50 hover:bg-gray-700 text-gray-400 border border-gray-600/30 transition-colors duration-150">WHOIS</a>`
-          }
         </div>
       `;
+
+      // Hover event listeners to handle beautiful theme-compatible interactive states
+      row.addEventListener('mouseenter', () => {
+        row.style.borderColor = 'var(--accent-primary)';
+        row.style.transform = 'translateY(-2px)';
+        row.style.boxShadow = 'var(--shadow-md)';
+        if (isExact) {
+          row.style.backgroundColor = 'var(--accent-light)';
+        } else {
+          row.style.backgroundColor = 'var(--bg-tertiary)';
+        }
+      });
+      row.style.transition = 'var(--transition-smooth)';
+      row.addEventListener('mouseleave', () => {
+        row.style.borderColor = isExact ? 'var(--accent-primary)' : 'var(--border-color)';
+        row.style.transform = 'translateY(0)';
+        row.style.boxShadow = isExact ? 'var(--shadow-sm)' : 'none';
+        row.style.backgroundColor = isExact ? 'var(--accent-light)' : 'var(--bg-secondary)';
+      });
+
       searchResultsList.appendChild(row);
     }
 
