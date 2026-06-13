@@ -461,15 +461,13 @@ import Layout from '../layouts/Layout.astro';
 
     .auth-card {
       padding: 2.25rem 1.5rem !important;
-      background: rgba(255, 255, 255, 0.02) !important;
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.08) !important;
-      box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.25) !important;
+      background: var(--bg-secondary) !important;
+      border: 1px solid var(--border-color) !important;
+      box-shadow: var(--shadow-md) !important;
     }
 
     [data-theme="light"] .auth-card {
-      background: rgba(255, 255, 255, 0.7) !important;
+      background: var(--bg-secondary) !important;
       border: 1px solid var(--border-color) !important;
       box-shadow: var(--shadow-lg) !important;
     }
@@ -483,17 +481,15 @@ import Layout from '../layouts/Layout.astro';
     .sidebar-sticky-card {
       padding: 28px !important;
       border-radius: 12px;
-      background: rgba(255, 255, 255, 0.02) !important;
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.08) !important;
-      box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.25) !important;
+      background: var(--bg-secondary) !important;
+      border: 1px solid var(--border-color) !important;
+      box-shadow: var(--shadow-md) !important;
       position: sticky;
       top: 100px;
     }
 
     [data-theme="light"] .sidebar-sticky-card {
-      background: rgba(255, 255, 255, 0.7) !important;
+      background: var(--bg-secondary) !important;
       border: 1px solid var(--border-color) !important;
       box-shadow: var(--shadow-lg) !important;
     }

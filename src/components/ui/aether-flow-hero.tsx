@@ -92,7 +92,7 @@ const AetherFlowHero: React.FC<AetherFlowHeroProps> = ({
                 let y = (Math.random() * ((window.innerHeight - size * 2) - (size * 2)) + size * 2);
                 let directionX = (Math.random() * 0.4) - 0.2;
                 let directionY = (Math.random() * 0.4) - 0.2;
-                let color = 'rgba(191, 128, 255, 0.8)'; // Brighter purple
+                let color = 'rgba(59, 130, 246, 0.8)'; // Blue 500
                 particles.push(new Particle(x, y, directionX, directionY, size, color));
             }
         }
@@ -124,7 +124,7 @@ const AetherFlowHero: React.FC<AetherFlowHeroProps> = ({
                         if (mouse.x && distance_mouse_a < mouse.radius) {
                              ctx.strokeStyle = `rgba(255, 255, 255, ${opacityValue})`;
                         } else {
-                             ctx.strokeStyle = `rgba(200, 150, 255, ${opacityValue})`;
+                             ctx.strokeStyle = `rgba(96, 165, 250, ${opacityValue})`; // Blue 400
                         }
                         
                         ctx.lineWidth = 1;

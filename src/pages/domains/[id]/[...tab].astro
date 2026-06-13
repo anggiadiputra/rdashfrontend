@@ -3442,16 +3442,27 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
     font-size: 11.5px;
     font-family: inherit;
     font-weight: 600;
-    border: 1px solid #c084fc; /* purple border */
+    border: 1px solid #60a5fa; /* blue border */
     border-radius: 6px;
-    background: #fdf4ff; /* light purple bg */
+    background: #eff6ff; /* light blue bg */
     cursor: pointer;
-    color: #9333ea; /* deep purple text */
+    color: #2563eb; /* deep blue text */
     transition: all 0.15s ease;
   }
   .btn-renew:hover {
-    background: #f3e8ff;
-    border-color: #a855f7;
+    background: #dbeafe;
+    border-color: #3b82f6;
+  }
+  
+  [data-theme="dark"] .btn-renew {
+    background: rgba(37, 99, 235, 0.1);
+    border-color: rgba(59, 130, 246, 0.4);
+    color: #60a5fa;
+  }
+  
+  [data-theme="dark"] .btn-renew:hover {
+    background: rgba(37, 99, 235, 0.2);
+    border-color: #60a5fa;
   }
   .renew-select {
     border: 1px solid var(--border-color, #d1d5db);
