@@ -1,20 +1,20 @@
 "use client";
 
-import React from 'react';
+import { useRef, useEffect, FC, ReactNode } from 'react';
 
 interface AetherFlowHeroProps {
   backgroundOnly?: boolean;
-  children?: React.ReactNode;
+  children?: ReactNode;
 }
 
 // Lightweight canvas-based particle background hero component
-const AetherFlowHero: React.FC<AetherFlowHeroProps> = ({
+const AetherFlowHero: FC<AetherFlowHeroProps> = ({
   backgroundOnly = false,
   children
 }) => {
-    const canvasRef = React.useRef<HTMLCanvasElement>(null);
+    const canvasRef = useRef<HTMLCanvasElement>(null);
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (typeof window !== 'undefined' && window.innerWidth < 768) return;
 
         const canvas = canvasRef.current;
