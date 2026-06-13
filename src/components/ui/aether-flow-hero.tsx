@@ -1,27 +1,14 @@
 "use client";
 
 import React from 'react';
-import { motion } from 'framer-motion';
-import { ArrowRight, Zap } from 'lucide-react';
-
-// A utility function for class names
-const cn = (...classes: any[]) => classes.filter(Boolean).join(' ');
 
 interface AetherFlowHeroProps {
-  badgeText?: string;
-  titleText?: string;
-  subtitleText?: string;
-  showExploreButton?: boolean;
   backgroundOnly?: boolean;
   children?: React.ReactNode;
 }
 
-// The main hero component
+// Lightweight canvas-based particle background hero component
 const AetherFlowHero: React.FC<AetherFlowHeroProps> = ({
-  badgeText = "Dynamic Rendering Engine",
-  titleText = "Aether Flow",
-  subtitleText = "An intelligent, adaptive framework for creating fluid digital experiences that feel alive and respond to user interaction in real-time.",
-  showExploreButton = true,
   backgroundOnly = false,
   children
 }) => {
@@ -185,84 +172,10 @@ const AetherFlowHero: React.FC<AetherFlowHeroProps> = ({
         };
     }, []);
 
-    const fadeUpVariants = {
-        hidden: { opacity: 0, y: 20 },
-        visible: (i: number) => ({
-            opacity: 1,
-            y: 0,
-            transition: {
-                delay: i * 0.2 + 0.5,
-                duration: 0.8,
-                ease: "easeInOut",
-            },
-        }),
-    };
-
-    if (backgroundOnly) {
-        return (
-            <div className="absolute inset-0 w-full h-full overflow-hidden bg-black">
-                <canvas ref={canvasRef} className="absolute top-0 left-0 w-full h-full block"></canvas>
-            </div>
-        );
-    }
-
     return (
-        <div className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden bg-black">
-            {/* The canvas is the primary background */}
+        <div className="absolute inset-0 w-full h-full overflow-hidden bg-black">
             <canvas ref={canvasRef} className="absolute top-0 left-0 w-full h-full block"></canvas>
-            
-            {/* Overlay HTML Content */}
-            <div className="relative z-10 text-center p-6 w-full flex flex-col items-center justify-center">
-                <motion.div
-                    custom={0}
-                    variants={fadeUpVariants}
-                    initial="hidden"
-                    animate="visible"
-                    className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 mb-6 backdrop-blur-sm"
-                >
-                    <Zap className="h-4 w-4 text-purple-400" />
-                    <span className="text-sm font-medium text-gray-200">
-                        {badgeText}
-                    </span>
-                </motion.div>
-
-                <motion.h1
-                    custom={1}
-                    variants={fadeUpVariants}
-                    initial="hidden"
-                    animate="visible"
-                    className="text-4xl md:text-7xl font-bold tracking-tighter mb-4 bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-400 max-w-3xl leading-tight"
-                >
-                    {titleText}
-                </motion.h1>
-
-                <motion.p
-                    custom={2}
-                    variants={fadeUpVariants}
-                    initial="hidden"
-                    animate="visible"
-                    className="max-w-xl mx-auto text-sm md:text-base text-gray-400 mb-8"
-                >
-                    {subtitleText}
-                </motion.p>
-
-                <motion.div
-                    custom={3}
-                    variants={fadeUpVariants}
-                    initial="hidden"
-                    animate="visible"
-                    className="w-full flex flex-col items-center justify-center"
-                >
-                    {children}
-                    
-                    {showExploreButton && !children && (
-                        <button className="px-8 py-4 bg-white text-black font-semibold rounded-lg shadow-lg hover:bg-gray-200 transition-colors duration-300 flex items-center gap-2 mx-auto">
-                            Explore the Engine
-                            <ArrowRight className="h-5 w-5" />
-                        </button>
-                    )}
-                </motion.div>
-            </div>
+            {children}
         </div>
     );
 };
