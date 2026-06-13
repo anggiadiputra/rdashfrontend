@@ -71,7 +71,12 @@ import Layout from '../layouts/Layout.astro';
             Verifikasi & Masuk
           </button>
 
-          <div class="text-center mt-4">
+          <div class="text-center mt-4" style="display: flex; flex-direction: column; gap: 12px; align-items: center;">
+            <p class="text-secondary" style="font-size: 14px; margin: 0;">
+              Tidak menerima kode? 
+              <button type="button" id="resend-otp-btn" class="text-primary font-medium" style="background:none;border:none;padding:0;cursor:pointer;text-decoration:underline;">Kirim Ulang</button>
+              <span id="resend-timer" class="text-muted hidden" style="margin-left: 4px;"></span>
+            </p>
             <button type="button" id="back-to-step1" class="btn btn-outline btn-sm">Ganti Akun</button>
           </div>
         </form>
@@ -98,8 +103,42 @@ import Layout from '../layouts/Layout.astro';
     const step2Btn = document.getElementById('step2-submit-btn') as HTMLButtonElement;
     const alertBox = document.getElementById('alert-box') as HTMLDivElement;
     const targetEmailLabel = document.getElementById('target-email') as HTMLSpanElement;
-    const backBtn = document.getElementById('back-to-step1') as HTMLButtonElement;
     const footerLink = document.getElementById('auth-footer-link') as HTMLDivElement;
+    const backBtn = document.getElementById('back-to-step1') as HTMLButtonElement;
+    const resendBtn = document.getElementById('resend-otp-btn') as HTMLButtonElement;
+    const resendTimer = document.getElementById('resend-timer') as HTMLSpanElement;
+
+    // State
+    let userEmail = '';
+    let userPassword = '';
+    let resendInterval: number | null = null;
+
+    // Start 60s countdown for resend
+    function startResendTimer() {
+      if (!resendBtn || !resendTimer) return;
+      resendBtn.disabled = true;
+      resendBtn.style.color = 'var(--text-muted)';
+      resendBtn.style.textDecoration = 'none';
+      resendBtn.style.cursor = 'not-allowed';
+      resendTimer.classList.remove('hidden');
+      
+      let timeLeft = 60;
+      if (resendInterval) window.clearInterval(resendInterval);
+      
+      resendTimer.innerText = `(${timeLeft}s)`;
+      resendInterval = window.setInterval(() => {
+        timeLeft--;
+        resendTimer.innerText = `(${timeLeft}s)`;
+        if (timeLeft <= 0) {
+          window.clearInterval(resendInterval!);
+          resendBtn.disabled = false;
+          resendBtn.style.color = 'var(--accent)';
+          resendBtn.style.textDecoration = 'underline';
+          resendBtn.style.cursor = 'pointer';
+          resendTimer.classList.add('hidden');
+        }
+      }, 1000);
+    }
 
     // Turnstile Logic
     if (typeof window !== 'undefined') {
@@ -159,6 +198,7 @@ import Layout from '../layouts/Layout.astro';
 
         // OTP sent successfully! Transition to Step 2
         userEmail = email;
+        userPassword = password;
         targetEmailLabel.innerText = email;
         
         step1Form.classList.add('hidden');
@@ -166,6 +206,7 @@ import Layout from '../layouts/Layout.astro';
         step2Form.classList.remove('hidden');
 
         showAlert(response.message || 'Kode OTP telah dikirimkan ke email Anda.', 'success');
+        startResendTimer();
       } catch (err: any) {
         console.error('Login step 1 failed:', err);
         showAlert(err.message || 'Email atau kata sandi salah. Silakan coba lagi.', 'error');
@@ -230,14 +271,38 @@ import Layout from '../layouts/Layout.astro';
     backBtn?.addEventListener('click', () => {
       // Invalidate current state
       userEmail = '';
+      userPassword = '';
       hideAlert();
+      if (resendInterval) window.clearInterval(resendInterval);
       
       // Reset forms
       step2Form.classList.add('hidden');
       step1Form.classList.remove('hidden');
       footerLink.classList.remove('hidden');
+    });
 
+    // 5. RESEND ACTION
+    resendBtn?.addEventListener('click', async () => {
+      if (!userEmail || !userPassword || resendBtn.disabled) return;
+      resendBtn.disabled = true;
+      resendBtn.innerText = 'Mengirim...';
+      hideAlert();
 
+      try {
+        const response = await apiFetch('/api/auth/login-step1', {
+          method: 'POST',
+          requireAuth: false,
+          body: JSON.stringify({ email: userEmail, password: userPassword, turnstileToken: '' }),
+        });
+        showAlert(response.message || 'Kode OTP baru telah dikirimkan ke email Anda.', 'success');
+        resendBtn.innerText = 'Kirim Ulang';
+        startResendTimer();
+      } catch (err: any) {
+        console.error('Resend OTP failed:', err);
+        showAlert(err.message || 'Gagal mengirim ulang OTP. Silakan coba lagi nanti.', 'error');
+        resendBtn.innerText = 'Kirim Ulang';
+        resendBtn.disabled = false;
+      }
     });
 
     function showAlert(message: string, type: 'success' | 'error' | 'warning') {
