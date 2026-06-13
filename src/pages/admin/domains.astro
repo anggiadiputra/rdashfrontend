@@ -222,18 +222,22 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
-              <td><span class="domain-name">${name}</span></td>
-              <td><span class="badge ${badgeClass}">${statusText}</span></td>
-              <td>
-                <div class="plan-period">${ownerName}</div>
-                <div class="plan-price">${ownerEmail}</div>
+              <td data-label="Nama Domain"><span class="domain-name">${name}</span></td>
+              <td data-label="Status"><span class="badge ${badgeClass}">${statusText}</span></td>
+              <td data-label="Pemilik / Customer">
+                <div style="text-align: right;">
+                  <div class="plan-period">${ownerName}</div>
+                  <div class="plan-price">${ownerEmail}</div>
+                </div>
               </td>
-              <td><div class="expiry-date">${regDisplay}</div></td>
-              <td>
-                <div class="expiry-date">${expDisplay}</div>
-                ${remainHTML}
+              <td data-label="Tanggal Registrasi"><div class="expiry-date">${regDisplay}</div></td>
+              <td data-label="Tanggal Kadaluarsa">
+                <div style="text-align: right;">
+                  <div class="expiry-date">${expDisplay}</div>
+                  ${remainHTML}
+                </div>
               </td>
-              <td>
+              <td data-label="Aksi">
                 <a href="/domains/${domain.id}/overview" class="btn btn-outline btn-sm-custom" style="height:32px;padding:0 12px;font-weight:600;display:inline-flex;align-items:center;gap:6px;">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
                   Kelola
@@ -462,5 +466,66 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 
     @keyframes spin { to { transform: rotate(360deg); } }
     .hidden { display: none !important; }
+
+    /* Mobile Card View for Admin Domains Table */
+    @media (max-width: 768px) {
+      .table-card {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+      }
+      
+      .table-scroll {
+        overflow-x: hidden !important;
+      }
+
+      table, tbody, tr, td {
+        display: block;
+        width: 100%;
+        white-space: normal !important;
+      }
+
+      /* Hide table header */
+      thead {
+        display: none;
+      }
+
+      /* Style each row as a card */
+      tr {
+        margin-bottom: 16px;
+        background: var(--surface, #fff);
+        border: 1px solid var(--border, #e5e7eb);
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      }
+
+      /* Style each cell */
+      td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0 !important;
+        text-align: right !important;
+        border-bottom: 1px dashed var(--border, #e5e7eb) !important;
+      }
+
+      td:last-child {
+        border-bottom: none !important;
+        padding-bottom: 0 !important;
+        margin-top: 8px;
+      }
+
+      /* Add Label before value */
+      td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: var(--text-secondary, #6b7280);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-right: auto;
+      }
+    }
   </style>
 </AdminLayout>

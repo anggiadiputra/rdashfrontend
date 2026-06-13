@@ -141,7 +141,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
   </div>
 </AdminLayout>
 
-<style>
+<style is:global>
   .billing-container {
     display: flex;
     flex-direction: column;
@@ -446,6 +446,72 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     opacity: 0.5;
     cursor: not-allowed;
   }
+
+  /* Prevent table cells from wrapping and squishing on mobile */
+  #transactions-table-wrap th, 
+  #transactions-table-wrap td {
+    white-space: nowrap;
+  }
+
+  /* Mobile Card View for Billing Table */
+  @media (max-width: 768px) {
+    #main-table-card {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+    
+    #transactions-table-wrap.table-scroll {
+      overflow-x: hidden !important;
+    }
+
+    #transactions-table-wrap table, 
+    #transactions-table-wrap tbody, 
+    #transactions-table-wrap tr, 
+    #transactions-table-wrap td {
+      display: block;
+      width: 100%;
+      white-space: normal !important;
+    }
+
+    #transactions-table-wrap thead {
+      display: none;
+    }
+
+    #transactions-table-wrap tr {
+      margin-bottom: 16px;
+      background: var(--surface, #fff);
+      border: 1px solid var(--border, #e5e7eb);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    #transactions-table-wrap td {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0 !important;
+      text-align: right !important;
+      border-bottom: 1px dashed var(--border, #e5e7eb) !important;
+    }
+
+    #transactions-table-wrap td:last-child {
+      border-bottom: none !important;
+      padding-bottom: 0 !important;
+      margin-top: 8px;
+    }
+
+    #transactions-table-wrap td::before {
+      content: attr(data-label);
+      font-weight: 600;
+      color: var(--text-secondary, #6b7280);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-right: auto;
+    }
+  }
 </style>
 
 <script>
@@ -625,14 +691,16 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 
       return `
         <tr>
-          <td style="color: var(--text-primary); font-weight: 600;">#${t.id}</td>
-          <td><code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-size:11px;color: var(--text-secondary); font-family: monospace;">${referenceText}</code></td>
-          <td>${t.description}</td>
-          <td>${new Date(t.created_at).toLocaleString('id-ID')}</td>
-          <td style="text-align: right;">${rdashCostHtml}</td>
-          <td style="text-align: right;">${customerPriceHtml}</td>
-          <td style="text-align: right;">${marginHtml}</td>
-          <td style="text-align: right;">${formatCurrency(balanceVal)}</td>
+          <td data-label="ID" style="color: var(--text-primary); font-weight: 600;">#${t.id}</td>
+          <td data-label="Referensi"><code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-size:11px;color: var(--text-secondary); font-family: monospace;">${referenceText}</code></td>
+          <td data-label="Keterangan">
+            <div style="text-align: right;">${t.description}</div>
+          </td>
+          <td data-label="Tanggal">${new Date(t.created_at).toLocaleString('id-ID')}</td>
+          <td data-label="Biaya RDASH" style="text-align: right;">${rdashCostHtml}</td>
+          <td data-label="Harga Jual" style="text-align: right;">${customerPriceHtml}</td>
+          <td data-label="Margin" style="text-align: right;">${marginHtml}</td>
+          <td data-label="Saldo RDASH" style="text-align: right;">${formatCurrency(balanceVal)}</td>
         </tr>
       `;
     }).join('');

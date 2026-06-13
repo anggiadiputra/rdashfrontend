@@ -128,7 +128,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
   </div>
 </AdminLayout>
 
-<style>
+<style is:global>
   .transactions-container {
     display: flex;
     flex-direction: column;
@@ -448,6 +448,72 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
       flex: 1;
     }
   }
+
+  /* Prevent table cells from wrapping and squishing on mobile */
+  #transactions-table-wrap th, 
+  #transactions-table-wrap td {
+    white-space: nowrap;
+  }
+
+  /* Mobile Card View for Transactions Table */
+  @media (max-width: 768px) {
+    #main-table-card {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+    
+    #transactions-table-wrap.table-scroll {
+      overflow-x: hidden !important;
+    }
+
+    #transactions-table-wrap table, 
+    #transactions-table-wrap tbody, 
+    #transactions-table-wrap tr, 
+    #transactions-table-wrap td {
+      display: block;
+      width: 100%;
+      white-space: normal !important;
+    }
+
+    #transactions-table-wrap thead {
+      display: none;
+    }
+
+    #transactions-table-wrap tr {
+      margin-bottom: 16px;
+      background: var(--surface, #fff);
+      border: 1px solid var(--border, #e5e7eb);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    #transactions-table-wrap td {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0 !important;
+      text-align: right !important;
+      border-bottom: 1px dashed var(--border, #e5e7eb) !important;
+    }
+
+    #transactions-table-wrap td:last-child {
+      border-bottom: none !important;
+      padding-bottom: 0 !important;
+      margin-top: 8px;
+    }
+
+    #transactions-table-wrap td::before {
+      content: attr(data-label);
+      font-weight: 600;
+      color: var(--text-secondary, #6b7280);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-right: auto;
+    }
+  }
 </style>
 
 <script>
@@ -540,26 +606,30 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 
       return `
         <tr>
-          <td style="color: var(--text-primary); font-weight: 600;">#${t.id}</td>
-          <td>
-            <div style="font-weight: 600; color: var(--text);">${customerName}</div>
-            <div style="font-size: 11px; color: var(--text-muted);">${customerEmail}</div>
-          </td>
-          <td>
-            <div style="font-weight: 600; color: var(--text);">${t.domain_name}</div>
-            <div style="margin-top: 4px; display: flex; align-items: center; gap: 4px;">
-              <span style="font-size: 10px; color: var(--text-muted);">Ref:</span>
-              ${referenceText}
+          <td data-label="ID" style="color: var(--text-primary); font-weight: 600;">#${t.id}</td>
+          <td data-label="Customer">
+            <div style="text-align: right;">
+              <div style="font-weight: 600; color: var(--text);">${customerName}</div>
+              <div style="font-size: 11px; color: var(--text-muted);">${customerEmail}</div>
             </div>
           </td>
-          <td>
+          <td data-label="Domain">
+            <div style="text-align: right;">
+              <div style="font-weight: 600; color: var(--text);">${t.domain_name}</div>
+              <div style="margin-top: 4px; display: flex; align-items: center; justify-content: flex-end; gap: 4px;">
+                <span style="font-size: 10px; color: var(--text-muted);">Ref:</span>
+                ${referenceText}
+              </div>
+            </div>
+          </td>
+          <td data-label="Tipe">
             <span class="badge-transaction ${t.action}">${getActionLabel(t.action)}</span>
           </td>
-          <td style="text-align: center; font-weight: 500;">${t.period} th</td>
-          <td style="text-align: right; color: var(--text-secondary); font-weight: 600;">${formatCurrency(costVal)}</td>
-          <td style="text-align: right; color: var(--text); font-weight: 700;">${formatCurrency(retailVal)}</td>
-          <td style="text-align: right; color: #16a34a; font-weight: 700;">+${formatCurrency(marginVal)}</td>
-          <td>${new Date(t.created_at).toLocaleString('id-ID')}</td>
+          <td data-label="Durasi" style="text-align: right; font-weight: 500;">${t.period} th</td>
+          <td data-label="Biaya Modal (Cost)" style="text-align: right; color: var(--text-secondary); font-weight: 600;">${formatCurrency(costVal)}</td>
+          <td data-label="Harga Jual" style="text-align: right; color: var(--text); font-weight: 700;">${formatCurrency(retailVal)}</td>
+          <td data-label="Profit (Margin)" style="text-align: right; color: #16a34a; font-weight: 700;">+${formatCurrency(marginVal)}</td>
+          <td data-label="Tanggal">${new Date(t.created_at).toLocaleString('id-ID')}</td>
         </tr>
       `;
     }).join('');

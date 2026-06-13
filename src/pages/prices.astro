@@ -367,12 +367,12 @@ import Layout from '../layouts/Layout.astro';
       }
 
       tr.innerHTML = `
-        <td style="padding: 16px 20px; vertical-align: middle;">${tldHtml}</td>
-        <td style="padding: 16px 20px; text-align: right; vertical-align: middle;">${regHtml}</td>
-        <td style="padding: 16px 20px; text-align: right; vertical-align: middle; font-weight: 500; color: var(--text-primary);">${formatCurrency(transferPrice)}</td>
-        <td style="padding: 16px 20px; text-align: right; vertical-align: middle; font-weight: 500; color: var(--text-primary);">${formatCurrency(renewPrice)}</td>
-        <td style="padding: 16px 20px; text-align: right; vertical-align: middle; font-weight: 500; color: var(--text-primary);">${formatCurrency(restorePrice)}</td>
-        <td style="padding: 16px 20px; text-align: right; vertical-align: middle;">
+        <td data-label="Extension" style="padding: 16px 20px; vertical-align: middle;">${tldHtml}</td>
+        <td data-label="Registration" style="padding: 16px 20px; text-align: right; vertical-align: middle;">${regHtml}</td>
+        <td data-label="Transfer" style="padding: 16px 20px; text-align: right; vertical-align: middle; font-weight: 500; color: var(--text-primary);">${formatCurrency(transferPrice)}</td>
+        <td data-label="Renewal" style="padding: 16px 20px; text-align: right; vertical-align: middle; font-weight: 500; color: var(--text-primary);">${formatCurrency(renewPrice)}</td>
+        <td data-label="Restore" style="padding: 16px 20px; text-align: right; vertical-align: middle; font-weight: 500; color: var(--text-primary);">${formatCurrency(restorePrice)}</td>
+        <td data-label="Aksi" style="padding: 16px 20px; text-align: right; vertical-align: middle;">
           <span class="detail-link btn-details-action" data-tld="${item.extension}" style="cursor: pointer; color: var(--accent-primary); font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 6px; transition: background 0.2s;">
             Detail &rarr;
           </span>
@@ -430,8 +430,8 @@ import Layout from '../layouts/Layout.astro';
           : `<span style="color: var(--text-primary); font-weight: 600;">${formatCurrency(price)}</span>`;
 
         tr.innerHTML = `
-          <td style="padding: 8px 0; font-weight: 500;">${yr} Tahun</td>
-          <td style="padding: 8px 0; text-align: right;">${priceHtml}</td>
+          <td data-label="Tahun" style="padding: 8px 0; font-weight: 500;">${yr} Tahun</td>
+          <td data-label="Harga Aktif" style="padding: 8px 0; text-align: right;">${priceHtml}</td>
         `;
         modalRegisterBody.appendChild(tr);
       });
@@ -449,8 +449,8 @@ import Layout from '../layouts/Layout.astro';
         const tr = document.createElement('tr');
         tr.style.borderBottom = '1px solid var(--border-color)';
         tr.innerHTML = `
-          <td style="padding: 8px 0; font-weight: 500;">${yr} Tahun</td>
-          <td style="padding: 8px 0; text-align: right; font-weight: 600; color: var(--text-primary);">${formatCurrency(price)}</td>
+          <td data-label="Tahun" style="padding: 8px 0; font-weight: 500;">${yr} Tahun</td>
+          <td data-label="Harga Aktif" style="padding: 8px 0; text-align: right; font-weight: 600; color: var(--text-primary);">${formatCurrency(price)}</td>
         `;
         modalRenewalBody.appendChild(tr);
       });
@@ -521,7 +521,7 @@ import Layout from '../layouts/Layout.astro';
   loadRealtimePrices();
 </script>
 
-<style>
+<style is:global>
   /* ── Tab Switch Links ── */
   .tab-link {
     background: none;
@@ -692,5 +692,92 @@ import Layout from '../layouts/Layout.astro';
   .btn-pagination:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+
+  /* Prevent table cells from wrapping and squishing on mobile */
+  .table-scroll th, 
+  .table-scroll td,
+  .table-responsive th,
+  .table-responsive td {
+    white-space: nowrap;
+  }
+
+  /* Mobile Card View for Tables */
+  @media (max-width: 768px) {
+    .table-scroll, .table-responsive {
+      overflow-x: hidden !important;
+    }
+
+    .table-scroll table, 
+    .table-scroll tbody, 
+    .table-scroll tr, 
+    .table-scroll td,
+    .table-responsive table,
+    .table-responsive tbody,
+    .table-responsive tr,
+    .table-responsive td {
+      display: block;
+      width: 100%;
+      white-space: normal !important;
+    }
+
+    /* Hide table header */
+    .table-scroll thead,
+    .table-responsive thead {
+      display: none;
+    }
+
+    /* Add subtle hover state to contact cards */
+    .table-scroll tr:hover,
+    .table-responsive tr:hover {
+      border-color: var(--accent-primary, #2563eb) !important;
+    }
+
+    /* Style each row as a card */
+    .table-scroll tr,
+    .table-responsive tr {
+      margin-bottom: 16px;
+      background: var(--surface, #fff);
+      border: 1px solid var(--border-color, #e5e7eb) !important;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    /* Form add row needs to look a bit different */
+    tr#forwarding-add-row {
+      background: #fbfbfb !important;
+      padding: 12px !important;
+    }
+
+    /* Style each cell */
+    .table-scroll td,
+    .table-responsive td {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0 !important;
+      text-align: right !important;
+      border-bottom: 1px dashed var(--border-color, #e5e7eb) !important;
+    }
+
+    .table-scroll td:last-child,
+    .table-responsive td:last-child {
+      border-bottom: none !important;
+      padding-bottom: 0 !important;
+      margin-top: 8px;
+    }
+
+    /* Add Label before value */
+    .table-scroll td::before,
+    .table-responsive td::before {
+      content: attr(data-label);
+      font-weight: 600;
+      color: var(--text-secondary, #6b7280);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-right: auto;
+    }
   }
 </style>
