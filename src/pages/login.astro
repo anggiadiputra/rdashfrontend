@@ -156,9 +156,6 @@ import Layout from '../layouts/Layout.astro';
         step1Btn.disabled = false;
       };
     }
-
-    let userEmail = '';
-
     // Auto-clean non-digits (like spaces/letters) from OTP input in real-time
     const otpInput = document.getElementById('otp-code') as HTMLInputElement;
     otpInput?.addEventListener('input', () => {
