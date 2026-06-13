@@ -265,7 +265,7 @@ import Layout from '../layouts/Layout.astro';
         tdVal.style.flexDirection = 'row';
         tdVal.style.flexWrap = 'wrap';
         tdVal.style.gap = '6px';
-        tdVal.innerHTML = value.map(val => `<span style="font-family: monospace; font-size: 12px; background: var(--bg-primary); border: 1px solid var(--border-color); color: var(--text-primary); padding: 4px 10px; border-radius: 6px; display: inline-block; font-weight: 500;">${val}</span>`).join('');
+        tdVal.innerHTML = value.map(val => `<span style="font-family: monospace; font-size: 12px; background: var(--bg-primary); border: 1px solid var(--border-color); color: var(--text-primary); padding: 4px 10px; border-radius: 6px; display: inline-block; font-weight: 500; word-break: break-all; white-space: normal;">${val}</span>`).join('');
       } else if (value instanceof HTMLElement) {
         tdVal.appendChild(value);
       } else {
@@ -729,6 +729,8 @@ import Layout from '../layouts/Layout.astro';
     #whois-table-body td {
       padding: 4px 0 !important;
       width: 100% !important;
+      white-space: normal !important;
+      word-break: break-word;
     }
   }
 

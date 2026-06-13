@@ -116,7 +116,7 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
           tdVal.appendChild(value);
         } else if (Array.isArray(value)) {
           tdVal.innerHTML = value.map(v =>
-            `<span style="font-family:monospace;font-size:12px;background:var(--bg, #f9fafb);border:1px solid var(--border);color:var(--text);padding:3px 9px;border-radius:5px;display:inline-block;margin:2px 4px 2px 0;">${v}</span>`
+            `<span style="font-family:monospace;font-size:12px;background:var(--bg, #f9fafb);border:1px solid var(--border);color:var(--text);padding:3px 9px;border-radius:5px;display:inline-block;margin:2px 4px 2px 0;word-break: break-all; white-space: normal;">${v}</span>`
           ).join('');
         } else {
           tdVal.innerText = value || '-';
@@ -392,6 +392,8 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
       color: var(--text);
       border-bottom: 1px solid var(--border, #f3f4f6);
       vertical-align: top;
+      white-space: normal !important;
+      word-break: break-word;
     }
 
     tbody tr:last-child .whois-label-cell,
@@ -409,6 +411,8 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
         padding: 4px 0 !important;
         width: 100% !important;
         border-bottom: none !important;
+        white-space: normal !important;
+        word-break: break-word;
       }
       #whois-table-body tr {
         border-bottom: 1px solid var(--border, #f3f4f6);
