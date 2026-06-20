@@ -61,6 +61,93 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
       </div>
     </div>
 
+    <!-- ── CHECKOUT MODAL ── -->
+    <div id="checkout-modal-overlay" class="modal-overlay hidden">
+      <div class="modal-container checkout-modal">
+        <div class="modal-header">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#7c3aed);display:flex;align-items:center;justify-content:center;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            </div>
+            <div>
+              <h3 class="modal-title">Konfigurasi Pendaftaran</h3>
+              <p id="modal-domain-display" class="modal-subtitle" style="font-family:monospace;color:var(--accent);">domain.com</p>
+            </div>
+          </div>
+          <button type="button" id="close-checkout-modal" class="close-search-btn" aria-label="Tutup">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <!-- Premium Alert -->
+          <div id="modal-premium-alert" class="modal-alert modal-alert-warning hidden">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;flex-shrink:0;"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span>Domain ini adalah domain <strong>premium</strong> dengan harga khusus dari registry.</span>
+          </div>
+
+          <!-- Years Selection -->
+          <div class="modal-field">
+            <label class="modal-label">Durasi Pendaftaran</label>
+            <select id="modal-years" class="form-control-compact" style="height:38px;font-size:13px;border-radius:8px;">
+              <option value="1">1 Tahun</option>
+              <option value="2">2 Tahun</option>
+              <option value="3">3 Tahun</option>
+              <option value="4">4 Tahun</option>
+              <option value="5">5 Tahun</option>
+              <option value="6">6 Tahun</option>
+              <option value="7">7 Tahun</option>
+              <option value="8">8 Tahun</option>
+              <option value="9">9 Tahun</option>
+              <option value="10">10 Tahun</option>
+            </select>
+          </div>
+
+          <!-- Custom Nameservers -->
+          <div class="modal-field">
+            <label class="modal-label">Nameserver Kustom <span style="font-weight:400;color:var(--text-muted);">(opsional)</span></label>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <input type="text" id="modal-ns1" class="form-control-compact" placeholder="ns1.example.com" style="height:36px;font-size:12px;border-radius:7px;" />
+              <input type="text" id="modal-ns2" class="form-control-compact" placeholder="ns2.example.com" style="height:36px;font-size:12px;border-radius:7px;" />
+            </div>
+            <p style="font-size:10.5px;color:var(--text-muted);margin-top:4px;">Kosongkan untuk menggunakan nameserver bawaan.</p>
+          </div>
+
+          <!-- Price Summary -->
+          <div class="modal-price-summary">
+            <div class="price-row">
+              <span class="price-label">Harga Domain (<span id="modal-calc-years">1 thn</span>):</span>
+              <span id="modal-price-base" class="price-value">Rp 0</span>
+            </div>
+            <div id="modal-promo-row" class="price-row hidden">
+              <span id="modal-promo-label" class="price-label" style="color:#16a34a;font-weight:600;">Hemat Promo:</span>
+              <span id="modal-price-saving" class="price-value" style="color:#16a34a;">-Rp 0</span>
+            </div>
+            <div id="modal-tax-row" class="price-row">
+              <span id="modal-tax-label" class="price-label">PPN / Pajak (11%):</span>
+              <span id="modal-price-tax" class="price-value">Rp 0</span>
+            </div>
+            <div class="price-row">
+              <span class="price-label">Biaya Admin:</span>
+              <span class="price-value">Rp 2.500</span>
+            </div>
+            <div class="price-row price-row-total">
+              <span class="price-label-total">Total Bayar:</span>
+              <span id="modal-price-total" class="price-value-total">Rp 0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" id="modal-cancel-btn" class="btn btn-outline" style="flex:1;height:42px;border-radius:8px;font-weight:600;">Batal</button>
+          <button type="button" id="modal-confirm-btn" class="btn btn-primary" style="flex:2;height:42px;border-radius:8px;font-weight:700;font-size:13.5px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+            Lanjutkan ke Pembayaran
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Search & Filters -->
     <div class="filters-bar">
       <input type="text" id="search-input" class="form-control-compact" placeholder="Cari nama domain..." style="max-width: 250px;" />
@@ -504,11 +591,10 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
       // Action button
       let actionHtml = '';
       if (isAvailable) {
-        const checkoutUrl = `/checkout?domain=${encodeURIComponent(domain)}${isPremium ? '&is_premium=true' : ''}`;
-        actionHtml = `<a href="${checkoutUrl}" class="btn btn-primary btn-sm-custom" style="height:32px;padding:0 14px;font-weight:600;font-size:12px;border-radius:6px;display:inline-flex;align-items:center;gap:4px;text-decoration:none;">
+        actionHtml = `<button type="button" class="btn btn-primary btn-sm-custom" style="height:32px;padding:0 14px;font-weight:600;font-size:12px;border-radius:6px;display:inline-flex;align-items:center;gap:4px;" onclick="openCheckoutModal('${domain}', ${isPremium}, ${isPremium && item.premium_price ? item.premium_price : 0})">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           Daftarkan
-        </a>`;
+        </button>`;
       } else {
         actionHtml = `<a href="/dashboard/whois?domain=${encodeURIComponent(domain)}" class="btn btn-outline btn-sm-custom" style="height:32px;padding:0 12px;font-weight:500;font-size:12px;border-radius:6px;display:inline-flex;align-items:center;gap:4px;text-decoration:none;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -543,6 +629,215 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
         const dom = (r as HTMLElement).dataset.domainRow || '';
         (r as HTMLElement).style.display = dom.includes(val) ? 'flex' : 'none';
       });
+    });
+
+    // ═══════════════════════════════════════════════════════
+    // ── CHECKOUT MODAL LOGIC ──
+    // ═══════════════════════════════════════════════════════
+    const modalOverlay = document.getElementById('checkout-modal-overlay') as HTMLDivElement;
+    const closeModalBtn = document.getElementById('close-checkout-modal') as HTMLButtonElement;
+    const modalCancelBtn = document.getElementById('modal-cancel-btn') as HTMLButtonElement;
+    const modalConfirmBtn = document.getElementById('modal-confirm-btn') as HTMLButtonElement;
+    const modalDomainDisplay = document.getElementById('modal-domain-display') as HTMLElement;
+    const modalYears = document.getElementById('modal-years') as HTMLSelectElement;
+    const modalNs1 = document.getElementById('modal-ns1') as HTMLInputElement;
+    const modalNs2 = document.getElementById('modal-ns2') as HTMLInputElement;
+    const modalPremiumAlert = document.getElementById('modal-premium-alert') as HTMLDivElement;
+    const modalCalcYears = document.getElementById('modal-calc-years') as HTMLSpanElement;
+    const modalPriceBase = document.getElementById('modal-price-base') as HTMLSpanElement;
+    const modalPromoRow = document.getElementById('modal-promo-row') as HTMLDivElement;
+    const modalPromoLabel = document.getElementById('modal-promo-label') as HTMLSpanElement;
+    const modalPriceSaving = document.getElementById('modal-price-saving') as HTMLSpanElement;
+    const modalTaxRow = document.getElementById('modal-tax-row') as HTMLDivElement;
+    const modalTaxLabel = document.getElementById('modal-tax-label') as HTMLSpanElement;
+    const modalPriceTax = document.getElementById('modal-price-tax') as HTMLSpanElement;
+    const modalPriceTotal = document.getElementById('modal-price-total') as HTMLSpanElement;
+
+    let modalCurrentDomain = '';
+    let modalIsPremium = false;
+    let modalPremiumPrice = 0;
+    let modalPricingObj: any = null;
+
+    let systemSettings: any = {
+      tax_enabled: true,
+      tax_rate: 11,
+    };
+
+    // Load system settings for tax calculation
+    async function loadSystemSettings() {
+      try {
+        const res = await apiFetch('/api/settings', { requireAuth: false });
+        if (res && res.success && res.data) {
+          systemSettings = res.data;
+        }
+      } catch (e) {
+        console.warn('Failed to load settings:', e);
+      }
+    }
+    loadSystemSettings();
+
+    // Open modal - called from onclick
+    (window as any).openCheckoutModal = function(domain: string, isPremium: boolean, premiumPrice: number) {
+      modalCurrentDomain = domain;
+      modalIsPremium = isPremium;
+      modalPremiumPrice = premiumPrice;
+
+      // Reset form
+      modalYears.value = '1';
+      modalNs1.value = '';
+      modalNs2.value = '';
+
+      // Display domain name
+      modalDomainDisplay.textContent = domain;
+
+      // Premium alert
+      if (isPremium) {
+        modalPremiumAlert.classList.remove('hidden');
+      } else {
+        modalPremiumAlert.classList.add('hidden');
+      }
+
+      // Find pricing
+      const dotIdx = domain.indexOf('.');
+      const ext = dotIdx !== -1 ? domain.substring(dotIdx) : '';
+      modalPricingObj = pricesCache.find((p: any) => p.extension === ext) || null;
+
+      // Calculate initial pricing
+      calculateModalPrice(1);
+
+      // Show modal
+      modalOverlay.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    };
+
+    function closeModal() {
+      modalOverlay.classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+
+    closeModalBtn?.addEventListener('click', closeModal);
+    modalCancelBtn?.addEventListener('click', closeModal);
+    modalOverlay?.addEventListener('click', (e) => {
+      if (e.target === modalOverlay) closeModal();
+    });
+
+    // Recalculate on years change
+    modalYears?.addEventListener('change', () => {
+      calculateModalPrice(parseInt(modalYears.value, 10));
+    });
+
+    function calculateModalPrice(years: number) {
+      let registerPrice = 0;
+      let regularPrice = 0;
+
+      if (modalIsPremium && modalPremiumPrice > 0) {
+        registerPrice = modalPremiumPrice * years;
+        regularPrice = modalPremiumPrice * years;
+
+        if (modalPromoRow) {
+          modalPromoRow.classList.remove('hidden');
+          if (modalPromoLabel) modalPromoLabel.textContent = 'Status Nama';
+          if (modalPriceSaving) {
+            modalPriceSaving.textContent = 'Premium';
+            modalPriceSaving.style.color = '#eab308';
+          }
+        }
+      } else if (modalPricingObj) {
+        if (modalPricingObj.registrationByYear) {
+          const yearPrice = modalPricingObj.registrationByYear[String(years)];
+          registerPrice = yearPrice || (modalPricingObj.registerPrice * years);
+
+          if (modalPricingObj.promo) {
+            if (modalPricingObj.regularRegistrationByYear) {
+              const regYP = modalPricingObj.regularRegistrationByYear[String(years)];
+              if (regYP) regularPrice = regYP;
+            }
+            if (!regularPrice && modalPricingObj.regularRegisterPrice > 0) {
+              regularPrice = modalPricingObj.regularRegisterPrice * years;
+            }
+          } else {
+            regularPrice = registerPrice;
+          }
+        } else {
+          registerPrice = modalPricingObj.registerPrice * years;
+          regularPrice = (modalPricingObj.regularRegisterPrice || modalPricingObj.registerPrice) * years;
+        }
+
+        const isPromo = modalPricingObj.promo && regularPrice > registerPrice;
+        if (isPromo) {
+          const saving = regularPrice - registerPrice;
+          if (modalPromoRow) {
+            modalPromoRow.classList.remove('hidden');
+            if (modalPromoLabel) modalPromoLabel.textContent = 'Hemat Promo';
+            if (modalPriceSaving) {
+              modalPriceSaving.textContent = `-Rp ${saving.toLocaleString('id-ID')}`;
+              modalPriceSaving.style.color = '#16a34a';
+            }
+          }
+        } else {
+          modalPromoRow?.classList.add('hidden');
+        }
+      }
+
+      // Update price displays
+      if (modalCalcYears) modalCalcYears.textContent = `${years} thn`;
+      if (modalPriceBase) modalPriceBase.textContent = `Rp ${regularPrice.toLocaleString('id-ID')}`;
+
+      // Tax
+      const taxRatePercent = systemSettings.tax_enabled ? (systemSettings.tax_rate || 0) : 0;
+      const tax = Math.round(registerPrice * (taxRatePercent / 100));
+      const admin = 2500;
+      const grandTotal = registerPrice + tax + admin;
+
+      if (systemSettings.tax_enabled) {
+        if (modalTaxRow) modalTaxRow.style.display = 'flex';
+        if (modalTaxLabel) modalTaxLabel.textContent = `PPN / Pajak (${taxRatePercent}%)`;
+        if (modalPriceTax) modalPriceTax.textContent = `Rp ${tax.toLocaleString('id-ID')}`;
+      } else {
+        if (modalTaxRow) modalTaxRow.style.display = 'none';
+      }
+
+      if (modalPriceTotal) modalPriceTotal.textContent = `Rp ${grandTotal.toLocaleString('id-ID')}`;
+
+      // Store for submit
+      (window as any)._modalCheckout = {
+        years,
+        price: registerPrice,
+        regularPrice,
+        isPromo: !modalIsPremium && modalPricingObj?.promo && regularPrice > registerPrice,
+        isPremium: modalIsPremium
+      };
+    }
+
+    // Confirm → save to sessionStorage → redirect to /domains/payment
+    modalConfirmBtn?.addEventListener('click', () => {
+      const ns1 = modalNs1.value.trim();
+      const ns2 = modalNs2.value.trim();
+
+      if ((ns1 && !ns2) || (!ns1 && ns2)) {
+        alert('Jika menggunakan nameserver kustom, silakan isi minimal 2 nameservers.');
+        return;
+      }
+
+      const calc = (window as any)._modalCheckout || {};
+      const dotIdx = modalCurrentDomain.indexOf('.');
+      const domainName = dotIdx !== -1 ? modalCurrentDomain.substring(0, dotIdx) : modalCurrentDomain;
+      const domainExtension = dotIdx !== -1 ? modalCurrentDomain.substring(dotIdx).replace(/^\./, '') : '';
+
+      const pendingCheckout = {
+        domainName,
+        domainExtension,
+        years: calc.years || 1,
+        ns: ns1 && ns2 ? [ns1, ns2] : [],
+        price: calc.price || 0,
+        regularPrice: calc.regularPrice || calc.price || 0,
+        isPromo: !!calc.isPromo,
+        isPremium: !!calc.isPremium
+      };
+
+      sessionStorage.setItem('pending_domain_checkout', JSON.stringify(pendingCheckout));
+      closeModal();
+      window.location.href = '/domains/payment';
     });
   </script>
 
@@ -691,6 +986,166 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
     }
 
 
+    /* ── Checkout Modal ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(0,0,0,0.45);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal-overlay.hidden {
+      display: none !important;
+    }
+
+    .modal-container {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15), 0 4px 16px rgba(0,0,0,0.08);
+      animation: modalSlideUp 0.25s ease-out;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    @keyframes modalSlideUp {
+      from { opacity: 0; transform: translateY(16px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0;
+      line-height: 1.3;
+    }
+
+    .modal-subtitle {
+      font-size: 13px;
+      margin: 2px 0 0;
+      font-weight: 600;
+    }
+
+    .modal-body {
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .modal-alert {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      line-height: 1.4;
+    }
+    .modal-alert-warning {
+      background: rgba(234, 179, 8, 0.08);
+      color: #a16207;
+      border: 1px solid rgba(234, 179, 8, 0.2);
+    }
+
+    .modal-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .modal-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .modal-price-summary {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .price-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12.5px;
+    }
+
+    .price-label {
+      color: var(--text-secondary);
+    }
+
+    .price-value {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .price-row-total {
+      border-top: 1px dashed var(--border);
+      padding-top: 10px;
+      margin-top: 2px;
+    }
+
+    .price-label-total {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .price-value-total {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .modal-footer {
+      padding: 16px 24px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+    }
+
+    @media (max-width: 640px) {
+      .modal-container {
+        max-width: 100%;
+        border-radius: 12px;
+      }
+      .modal-footer {
+        flex-direction: column;
+      }
+      .modal-footer button {
+        flex: none !important;
+        width: 100%;
+      }
+    }
   </style>
 
   <style is:global>
