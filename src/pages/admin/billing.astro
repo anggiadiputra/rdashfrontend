@@ -807,7 +807,12 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
       const domainsRes = await apiFetch('/api/admin/domains');
       if (domainsRes && domainsRes.data) {
         const domainsCountEl = document.getElementById('total-domains-count');
-        if (domainsCountEl) domainsCountEl.textContent = `${domainsRes.data.length} Domain`;
+        if (domainsCountEl) {
+          const totalCount = domainsRes.meta && typeof domainsRes.meta.total === 'number'
+            ? domainsRes.meta.total
+            : domainsRes.data.length;
+          domainsCountEl.textContent = `${totalCount} Domain`;
+        }
       }
     } catch (err: any) {
       console.error('Error fetching billing data:', err);
