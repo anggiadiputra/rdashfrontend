@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useEffect, FC, ReactNode } from 'react';
+import { useRef, useEffect } from 'react';
+import type { FC, ReactNode } from 'react';
 
 interface AetherFlowHeroProps {
   backgroundOnly?: boolean;

@@ -16,10 +16,48 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
           <svg class="lucide lucide-repeat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><path d="m16 3 4 4-4 4"/><path d="M20 7H9a4 4 0 0 0-4 4v9"/><path d="m8 21-4-4 4-4"/><path d="M4 17h11a4 4 0 0 0 4-4V4"/></svg>
           Transfer Domain
         </a>
-        <a href="/" class="btn btn-primary">
+        <button type="button" id="toggle-search-btn" class="btn btn-primary">
           <svg class="lucide lucide-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="width:14px;height:14px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Daftar Domain
-        </a>
+        </button>
+      </div>
+    </div>
+
+    <!-- ── COLLAPSIBLE DOMAIN SEARCH SECTION ── -->
+    <div id="domain-search-section" class="domain-search-section hidden">
+      <div class="search-section-card">
+        <div class="search-section-header">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <svg class="lucide lucide-search" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <div>
+              <h3 class="search-section-title">Cari & Daftarkan Domain Baru</h3>
+              <p class="search-section-subtitle">Ketik nama domain untuk mengecek ketersediaan di semua ekstensi</p>
+            </div>
+          </div>
+          <button type="button" id="close-search-btn" class="close-search-btn" aria-label="Tutup pencarian">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+
+        <form id="domain-search-form" class="domain-search-bar">
+          <div style="position:relative;flex:1;">
+            <svg class="lucide lucide-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none;"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+            <input type="text" id="new-domain-input" class="form-control-compact" placeholder="Ketik nama domain (misal: bisnissaya)..." required style="padding-left:36px;height:40px;font-size:13px;border-radius:8px;width:100%;" />
+          </div>
+          <button type="submit" id="domain-search-btn" class="btn btn-primary" style="height:40px;padding:0 20px;font-weight:600;border-radius:8px;white-space:nowrap;">
+            <svg class="lucide lucide-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Cari Ketersediaan
+          </button>
+        </form>
+
+        <!-- Search Results -->
+        <div id="search-results-container" class="hidden">
+          <div class="search-results-header">
+            <span class="search-results-label">Hasil pencarian: <strong id="search-query-display" style="color:var(--accent);font-family:monospace;"></strong></span>
+            <input type="text" id="results-filter-input" class="form-control-compact" placeholder="Saring ekstensi..." style="height:30px;font-size:11.5px;width:150px;border-radius:6px;" />
+          </div>
+          <div id="search-results-list" style="display:flex;flex-direction:column;gap:6px;max-height:360px;overflow-y:auto;padding-right:4px;"></div>
+        </div>
       </div>
     </div>
 
@@ -281,10 +319,10 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
               Anda belum memiliki domain di akun ini. Daftarkan domain pertama Anda sekarang!
             </p>
             <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-              <a href="/" class="btn btn-primary" style="height:40px;font-size:13px;font-weight:700;">
+              <button type="button" class="btn btn-primary" style="height:40px;font-size:13px;font-weight:700;" onclick="document.getElementById('toggle-search-btn')?.click()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="width:13px;height:13px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 Daftar Domain Baru
-              </a>
+              </button>
               <a href="/domains/transfer" class="btn btn-outline" style="height:40px;font-size:13px;font-weight:600;">
                 Transfer Domain
               </a>
@@ -302,6 +340,210 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
       }
       domainsEmpty.classList.remove('hidden');
     }
+
+    // ═══════════════════════════════════════════════════════
+    // ── DOMAIN SEARCH & ORDER (NEW) ──
+    // ═══════════════════════════════════════════════════════
+    const searchSection = document.getElementById('domain-search-section') as HTMLDivElement;
+    const toggleSearchBtn = document.getElementById('toggle-search-btn') as HTMLButtonElement;
+    const closeSearchBtn = document.getElementById('close-search-btn') as HTMLButtonElement;
+    const domainSearchForm = document.getElementById('domain-search-form') as HTMLFormElement;
+    const newDomainInput = document.getElementById('new-domain-input') as HTMLInputElement;
+    const domainSearchBtn = document.getElementById('domain-search-btn') as HTMLButtonElement;
+    const searchResultsContainer = document.getElementById('search-results-container') as HTMLDivElement;
+    const searchQueryDisplay = document.getElementById('search-query-display') as HTMLSpanElement;
+    const searchResultsList = document.getElementById('search-results-list') as HTMLDivElement;
+    const resultsFilterInput = document.getElementById('results-filter-input') as HTMLInputElement;
+
+    let pricesCache: any[] = [];
+    let extensionsCache: string[] = ['.com', '.net', '.org', '.id', '.co.id', '.web.id', '.my.id', '.xyz'];
+
+    // Load extension prices
+    async function loadPricesCache() {
+      try {
+        const res = await apiFetch('/api/domains/prices', { requireAuth: false });
+        if (res.success && Array.isArray(res.data) && res.data.length > 0) {
+          pricesCache = res.data;
+          extensionsCache = res.data.map((p: any) => p.extension);
+        }
+      } catch (err) {
+        console.warn('Failed to load domain prices:', err);
+      }
+    }
+    loadPricesCache();
+
+    // Toggle search section
+    toggleSearchBtn?.addEventListener('click', () => {
+      const isOpen = !searchSection.classList.contains('hidden');
+      if (isOpen) {
+        searchSection.classList.add('hidden');
+      } else {
+        searchSection.classList.remove('hidden');
+        newDomainInput?.focus();
+        searchSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    });
+
+    closeSearchBtn?.addEventListener('click', () => {
+      searchSection.classList.add('hidden');
+    });
+
+    // Search form submit
+    domainSearchForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (resultsFilterInput) resultsFilterInput.value = '';
+
+      const query = newDomainInput.value.trim().toLowerCase();
+      if (!query) return;
+
+      const cleanName = query.split('.')[0];
+      if (cleanName.length < 3) {
+        alert('Nama domain minimal terdiri dari 3 karakter.');
+        return;
+      }
+
+      domainSearchBtn.disabled = true;
+      domainSearchBtn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:2px;"></span> Mengecek...';
+      searchResultsContainer.classList.add('hidden');
+
+      try {
+        searchQueryDisplay.textContent = cleanName;
+        searchResultsList.innerHTML = '';
+        searchResultsContainer.classList.remove('hidden');
+
+        // Render skeleton loaders
+        extensionsCache.forEach(() => {
+          const skeleton = document.createElement('div');
+          skeleton.className = 'search-result-row';
+          skeleton.style.opacity = '0.5';
+          skeleton.innerHTML = `
+            <div style="display:flex;flex-direction:column;gap:6px;flex:1;">
+              <div style="height:14px;border-radius:4px;background:var(--border);width:140px;animation:pulse 1.5s ease-in-out infinite;"></div>
+              <div style="height:12px;border-radius:4px;background:var(--border);width:90px;animation:pulse 1.5s ease-in-out infinite;"></div>
+            </div>
+            <div style="height:32px;width:80px;border-radius:6px;background:var(--border);animation:pulse 1.5s ease-in-out infinite;"></div>
+          `;
+          searchResultsList.appendChild(skeleton);
+        });
+
+        // Call availability API
+        const tlds = extensionsCache.join(',');
+        const response = await apiFetch(`/api/domains/availability?domainName=${encodeURIComponent(cleanName)}&extensions=${encodeURIComponent(tlds)}`, { requireAuth: false });
+
+        searchResultsList.innerHTML = '';
+
+        if (response.success && response.data) {
+          const sorted = [...response.data].sort((a: any, b: any) => {
+            const aExact = a.domain.toLowerCase() === query.toLowerCase();
+            const bExact = b.domain.toLowerCase() === query.toLowerCase();
+            if (aExact && !bExact) return -1;
+            if (!aExact && bExact) return 1;
+            return 0;
+          });
+
+          sorted.forEach((item: any) => {
+            const isExact = item.domain.toLowerCase() === query.toLowerCase();
+            renderSearchResult(item, isExact);
+          });
+        }
+      } catch (err) {
+        console.error('Availability check failed:', err);
+        searchResultsList.innerHTML = '<p style="font-size:12px;color:#ef4444;padding:12px 0;text-align:center;">Gagal memuat ketersediaan domain. Silakan coba lagi.</p>';
+      } finally {
+        domainSearchBtn.disabled = false;
+        domainSearchBtn.innerHTML = '<svg class="lucide lucide-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Cari Ketersediaan';
+      }
+    });
+
+    function renderSearchResult(item: any, isExact: boolean) {
+      const domain = item.domain;
+      const isAvailable = item.status === 'available';
+      const isPremium = !!item.is_premium;
+
+      const row = document.createElement('div');
+      row.className = `search-result-row ${isExact ? 'exact-match' : ''}`;
+      row.setAttribute('data-domain-row', domain.toLowerCase());
+
+      const dotIndex = domain.indexOf('.');
+      const namePart = dotIndex !== -1 ? domain.substring(0, dotIndex) : domain;
+      const extPart = dotIndex !== -1 ? domain.substring(dotIndex) : '';
+      const pricing = pricesCache.find((p: any) => p.extension === extPart);
+
+      // Price HTML
+      let priceHtml = '';
+      if (isPremium && item.premium_price > 0) {
+        priceHtml = `<span style="color:#eab308;font-weight:700;font-size:13px;">Rp ${item.premium_price.toLocaleString('id-ID')}</span>`;
+      } else if (pricing) {
+        const isPromo = pricing.promo && pricing.regularRegisterPrice > pricing.registerPrice;
+        if (isPromo) {
+          priceHtml = `<span style="text-decoration:line-through;color:var(--text-muted);font-size:11px;margin-right:4px;">Rp ${pricing.regularRegisterPrice.toLocaleString('id-ID')}</span><span style="color:#16a34a;font-weight:700;font-size:13px;">Rp ${pricing.registerPrice.toLocaleString('id-ID')}</span>`;
+        } else {
+          priceHtml = `<span style="font-weight:600;font-size:13px;color:var(--text);">Rp ${pricing.registerPrice.toLocaleString('id-ID')}</span>`;
+        }
+      }
+
+      // Badges
+      let badgesHtml = '';
+      if (isPremium) {
+        badgesHtml += '<span class="result-badge result-badge-premium">PREMIUM</span>';
+      } else if (pricing?.promo && pricing.regularRegisterPrice > pricing.registerPrice) {
+        badgesHtml += '<span class="result-badge result-badge-promo">PROMO</span>';
+      }
+      if (isExact) {
+        badgesHtml += '<span class="result-badge result-badge-exact">Pilihan Anda</span>';
+      }
+
+      // Status
+      let statusHtml = '';
+      if (isAvailable) {
+        statusHtml = `<span class="result-status result-status-available"><span class="status-dot available"></span> Tersedia</span>`;
+      } else {
+        statusHtml = `<span class="result-status result-status-taken"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:11px;height:11px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Terdaftar</span>`;
+      }
+
+      // Action button
+      let actionHtml = '';
+      if (isAvailable) {
+        const checkoutUrl = `/checkout?domain=${encodeURIComponent(domain)}${isPremium ? '&is_premium=true' : ''}`;
+        actionHtml = `<a href="${checkoutUrl}" class="btn btn-primary btn-sm-custom" style="height:32px;padding:0 14px;font-weight:600;font-size:12px;border-radius:6px;display:inline-flex;align-items:center;gap:4px;text-decoration:none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          Daftarkan
+        </a>`;
+      } else {
+        actionHtml = `<a href="/dashboard/whois?domain=${encodeURIComponent(domain)}" class="btn btn-outline btn-sm-custom" style="height:32px;padding:0 12px;font-weight:500;font-size:12px;border-radius:6px;display:inline-flex;align-items:center;gap:4px;text-decoration:none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          WHOIS
+        </a>`;
+      }
+
+      row.innerHTML = `
+        <div class="result-left">
+          <div class="result-domain-line">
+            <span class="result-domain-name">${namePart}<span style="color:var(--text-muted);font-weight:500;">${extPart}</span></span>
+            ${badgesHtml}
+          </div>
+          <div class="result-meta-line">
+            ${statusHtml}
+            ${priceHtml ? `<span class="result-divider"></span><span class="result-price">${priceHtml}</span>` : ''}
+          </div>
+        </div>
+        <div class="result-right">
+          ${actionHtml}
+        </div>
+      `;
+
+      searchResultsList.appendChild(row);
+    }
+
+    // Results live filter
+    resultsFilterInput?.addEventListener('input', () => {
+      const val = resultsFilterInput.value.trim().toLowerCase();
+      const rows = searchResultsList.querySelectorAll('[data-domain-row]');
+      rows.forEach((r) => {
+        const dom = (r as HTMLElement).dataset.domainRow || '';
+        (r as HTMLElement).style.display = dom.includes(val) ? 'flex' : 'none';
+      });
+    });
   </script>
 
   <style>
@@ -373,6 +615,228 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
     }
 
     .hidden { display: none !important; }
+
+    /* ── Domain Search Section ── */
+    .domain-search-section {
+      margin-bottom: 20px;
+      animation: slideDown 0.25s ease-out;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .search-section-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    .search-section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .search-section-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0;
+      line-height: 1.3;
+    }
+
+    .search-section-subtitle {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin: 2px 0 0;
+    }
+
+    .close-search-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, color 0.15s;
+    }
+    .close-search-btn:hover {
+      background: var(--border);
+      color: var(--text);
+    }
+
+    .domain-search-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 0;
+    }
+
+    @media (max-width: 640px) {
+      .domain-search-bar {
+        flex-direction: column;
+      }
+    }
+
+    /* Search Results */
+    .search-results-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0 10px;
+      border-top: 1px solid var(--border);
+      margin-top: 16px;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .search-results-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .search-result-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      gap: 12px;
+      transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+      background: var(--bg);
+    }
+    .search-result-row:hover {
+      border-color: var(--accent);
+      background: var(--surface);
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.06);
+    }
+    .search-result-row.exact-match {
+      border-color: rgba(37, 99, 235, 0.3);
+      background: rgba(37, 99, 235, 0.03);
+    }
+
+    .result-left {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .result-domain-line {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .result-domain-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.2px;
+    }
+
+    .result-badge {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .result-badge-premium {
+      background: rgba(234, 179, 8, 0.1);
+      color: #ca8a04;
+      border: 1px solid rgba(234, 179, 8, 0.2);
+    }
+    .result-badge-promo {
+      background: #dcfce7;
+      color: #16a34a;
+      border: 1px solid rgba(22, 163, 74, 0.2);
+    }
+    .result-badge-exact {
+      background: rgba(37, 99, 235, 0.08);
+      color: var(--accent);
+      border: 1px solid rgba(37, 99, 235, 0.2);
+    }
+
+    .result-meta-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .result-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11.5px;
+      font-weight: 600;
+    }
+    .result-status-available {
+      color: #16a34a;
+    }
+    .result-status-taken {
+      color: var(--text-muted);
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .status-dot.available {
+      background: #16a34a;
+      box-shadow: 0 0 6px rgba(22, 163, 74, 0.5);
+    }
+
+    .result-divider {
+      width: 1px;
+      height: 10px;
+      background: var(--border);
+    }
+
+    .result-price {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .result-right {
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 640px) {
+      .search-result-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+      }
+      .result-right {
+        width: 100%;
+      }
+      .result-right a {
+        width: 100%;
+        justify-content: center;
+      }
+    }
   </style>
 
   <style is:global>
